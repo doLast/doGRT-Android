@@ -1,0 +1,15 @@
+<resources>
+
+    <string name="app_name">doGRT</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">doGRT</string>
+    <string name="title_activity_main1">MainActivity</string>
+    <string name="text">Text</string>
+    
+    <string name="enable_gps">Enable GPS?</string>
+    <string name="do_not_enable_gps">No</string>
+    <string name="enable_gps_dialog">Would you like to enable GPS?</string>
+    <string name="do_not_display">Do not remind me again</string>
+
+</resources>
