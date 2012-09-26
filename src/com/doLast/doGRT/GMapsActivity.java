@@ -42,6 +42,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	 */	
 	public class PinItemizedOverlay extends ItemizedOverlay {
 	   	Context mContext = null;
+	   	String stop_id = null;
 		private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
 		
 		public PinItemizedOverlay(Drawable defaultMarker) {
@@ -70,10 +71,22 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		protected boolean onTap(int index) {
 		  OverlayItem item = mOverlays.get(index);
 		  // This display a dialog
-		  AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
-		  dialog.setTitle(item.getTitle());
-		  dialog.setMessage(item.getSnippet());
-		  dialog.show();
+		  AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+		  String[] stop_with_id = item.getSnippet().split(",");
+		  stop_id = stop_with_id[0];
+		  builder.setTitle(item.getTitle())
+		  			.setMessage(stop_with_id[1])
+		  			.setPositiveButton(R.string.available_routes, new DialogInterface.OnClickListener() {
+	        			@Override
+	        			public void onClick(DialogInterface dialog, int which) {
+	        				// Switch to route display
+	        	        	Intent routes_intent = new Intent(mContext, RoutesActivity.class);
+	        	        	// Pack stop id with the intent
+	        	        	routes_intent.putExtra(android.content.Intent.EXTRA_TEXT, stop_id);
+	        	        	startActivity(routes_intent);
+	        			}
+	        		})
+		  			.show();
 		  return true;
 		}			
 		
@@ -225,7 +238,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			CharSequence[] remember = {"Do not display this again"};
 			builder.setTitle(R.string.enable_gps)
-	        		.setMessage(R.string.enable_gps_dialog)                    
+					.setMessage(R.string.enable_gps_dialog)                    
 	        		.setNegativeButton(R.string.enable_gps, new DialogInterface.OnClickListener() {
 	        			@Override
 	        			public void onClick(DialogInterface dialog, int which) {
@@ -273,7 +286,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         // Display all bus stops up to MAX_STOPS_IN_MAP stops
         for(int i = 0; i < stops.getCount() && i < MAX_STOPS_IN_MAP; i += 1) {
         	GeoPoint point = new GeoPoint((int)(stops.getDouble(2) * 1E6), (int)(stops.getDouble(3) * 1E6));
-            OverlayItem overlayitem = new OverlayItem(point, "Stop", stops.getString(1));            
+            OverlayItem overlayitem = new OverlayItem(point, "Stop", stops.getString(0) + "," + stops.getString(1));            
             itemized_overlay.addOverlay(overlayitem);
         	stops.moveToNext();
         }

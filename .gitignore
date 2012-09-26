@@ -8,6 +8,9 @@
 # Java class files
 *.class
 
+# Assets
+assets/
+
 # generated files
 bin/
 gen/
@@ -18,3 +21,7 @@ local.properties
 # Eclipse project files
 .classpath
 .project
+.settings/
+*-eclipse-keystore
+lint.xml
+proguard-project.txt

@@ -31,7 +31,7 @@ public class DatabaseProvider extends ContentProvider {
 		
     private static String DB_PATH = "/data/data/com.doLast.doGRT/databases/"; 
     private static String DB_NAME = "GRT_GTFS.sqlite";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
     private static final String BASE_PATH = "";
     
     // Database
@@ -39,21 +39,20 @@ public class DatabaseProvider extends ContentProvider {
     
     // For UriMatcher
     private static final int BUS_STOP = 100;
-    private static final int BUS_STOP_ID = 110;
     private static final int CALENDAR = 200;
     private static final int ROUTE = 300;
-    private static final int ROUTE_ID = 310;
     private static final int TRIP = 400;
     private static final int STOP_TIME = 500;
+    private static final int STOP_TIME_TRIP_ROUTE = 600;
      
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
     	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.StopsColumns.TABLE_NAME, BUS_STOP);
     	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.CalendarColumns.TABLE_NAME, CALENDAR);
     	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.RoutesColumns.TABLE_NAME, ROUTE);
-    	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.RoutesColumns.TABLE_NAME + "/#", ROUTE);
     	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.TripsColumns.TABLE_NAME, TRIP);
     	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.StopTimesColumns.TABLE_NAME, STOP_TIME);
+    	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.STOP_TIME_TRIP_ROUTE_JOINT, STOP_TIME_TRIP_ROUTE);
     }
     
     /** This class helps create and update the database
@@ -236,15 +235,16 @@ public class DatabaseProvider extends ContentProvider {
 	    case ROUTE:
 	    	table = DatabaseSchema.RoutesColumns.TABLE_NAME;
 	    	break;
-	    case ROUTE_ID:
-	        queryBuilder.appendWhere(DatabaseSchema.RoutesColumns._ID + "="
-	                + uri.getLastPathSegment());
-	    	break;
 	    case TRIP:
 	    	table = DatabaseSchema.TripsColumns.TABLE_NAME;
 	    	break;
 	    case STOP_TIME:
 	    	table = DatabaseSchema.StopTimesColumns.TABLE_NAME;
+	    	break;
+	    case STOP_TIME_TRIP_ROUTE:
+	    	table = DatabaseSchema.StopTimesColumns.TABLE_NAME + ", " + 
+	    			DatabaseSchema.TripsColumns.TABLE_NAME + ", " +
+	    			DatabaseSchema.RoutesColumns.TABLE_NAME;
 	    	break;
 	    default:
 	    	throw new IllegalArgumentException("Unknown URI " + uri);
@@ -268,6 +268,7 @@ public class DatabaseProvider extends ContentProvider {
          * object is returned; otherwise, the cursor variable contains null. If no records were
          * selected, then the Cursor object is empty, and Cursor.getCount() returns 0.
          */
+        queryBuilder.setDistinct(true);
         Cursor c = queryBuilder.query(
             db,            // The database to query
             projection,    // The columns to return from the query
@@ -275,7 +276,7 @@ public class DatabaseProvider extends ContentProvider {
             selectionArgs, // The values for the where clause
             null,          // don't group the rows
             null,          // don't filter by row groups
-            "'"+orderBy+"'"        // The sort order
+            orderBy        // The sort order
         );
 	    
         // Tells the Cursor what URI to watch, so it knows when its source data changes

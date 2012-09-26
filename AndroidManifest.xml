@@ -37,7 +37,9 @@
             android:name=".GMapsActivity">            
         </activity>
 
-
+		<activity
+		    android:name=".RoutesActivity">		    
+		</activity>
         
     </application>
 

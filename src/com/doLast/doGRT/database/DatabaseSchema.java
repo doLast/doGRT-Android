@@ -11,7 +11,10 @@ public final class DatabaseSchema {
 	public static final String AUTHORITY = "com.doLast.doGRT.database";
 	public static final String URI_PREFIX = "content://" + AUTHORITY;		
     // The default sort order for this table
-    public static final String DEFAULT_SORT_ORDER = "modified DESC";
+    public static final String DEFAULT_SORT_ORDER = "";
+    
+    public static final String STOP_TIME_TRIP_ROUTE_JOINT = "stop_time_trip_route_joint";
+    public static final Uri STTRJ_CONTENT_URI = Uri.parse(URI_PREFIX + "/" + STOP_TIME_TRIP_ROUTE_JOINT);
     
 	// This class cannot be instantiated
 	private DatabaseSchema() {}
@@ -66,7 +69,7 @@ public final class DatabaseSchema {
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + TABLE_NAME;       
         
         // The default sort order for this table
-        public static final String DEFAULT_SORT_ORDER = "modified DESC";
+        public static final String DEFAULT_SORT_ORDER = "";
         
         /** 
          * Name of the agency 
@@ -135,7 +138,7 @@ public final class DatabaseSchema {
         /**
          * The default sort order for this table
          */
-        public static final String DEFAULT_SORT_ORDER = "modified DESC";
+        public static final String DEFAULT_SORT_ORDER = "";
         
         /**
          * Service id
@@ -180,7 +183,7 @@ public final class DatabaseSchema {
         /**
          * The default sort order for this table
          */
-        public static final String DEFAULT_SORT_ORDER = "modified DESC";
+        public static final String DEFAULT_SORT_ORDER = "";
 		
         /**
          * Service id (Primary Key)
@@ -233,7 +236,7 @@ public final class DatabaseSchema {
         /**
          * The default sort order for this table
          */
-        public static final String DEFAULT_SORT_ORDER = "modified DESC";
+        public static final String DEFAULT_SORT_ORDER = "";
         
         /**
          * Fare id
