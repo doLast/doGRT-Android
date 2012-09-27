@@ -9,7 +9,9 @@ import android.provider.BaseColumns;
 
 public final class DatabaseSchema {
 	public static final String AUTHORITY = "com.doLast.doGRT.database";
-	public static final String URI_PREFIX = "content://" + AUTHORITY;		
+	public static final String URI_PREFIX = "content://" + AUTHORITY;
+	public static final String USER_AUTHORITY = "com.doLast.doGRT.userdatabase";
+	public static final String USER_URI_PREFIX = "content://" + USER_AUTHORITY;
     // The default sort order for this table
     public static final String DEFAULT_SORT_ORDER = "";
     
@@ -28,7 +30,7 @@ public final class DatabaseSchema {
 	    /**
          * The content:// style URL for this table
          */
-        public static final Uri CONTENT_URI = Uri.parse(URI_PREFIX + "/" + TABLE_NAME);
+        public static final Uri CONTENT_URI = Uri.parse(USER_URI_PREFIX + "/" + TABLE_NAME);
         
         /**
          * The MIME type of {@link #CONTENT_URI} providing a directory of notes.
@@ -39,12 +41,24 @@ public final class DatabaseSchema {
          * The MIME type of a {@link #CONTENT_URI} sub-directory of a single note.
          */
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + TABLE_NAME;
-		
+        
         /**
          * User id (Primary Key)
-         * Type: INTEGER
+         * Type: INTEGER 
          */
         public static final String USER_ID = "user_id";
+		
+        /**
+         * Stop id 
+         * Type: INTEGER
+         */
+        public static final String STOP_ID = "stop_id";
+        
+        /**
+         * Title 
+         * Type: TEXT
+         */
+        public static final String TITLE = "title";              
 	}
 	
 	public static final class AgencyColumns implements BaseColumns {

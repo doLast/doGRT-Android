@@ -19,6 +19,10 @@
         <provider android:name=".database.DatabaseProvider"
             android:authorities="com.doLast.doGRT.database" >
         </provider>
+        
+        <provider android:name=".database.UserDatabaseProvider"
+            android:authorities="com.doLast.doGRT.userdatabase" >
+        </provider>
 
         <uses-library android:name="com.google.android.maps" />
         

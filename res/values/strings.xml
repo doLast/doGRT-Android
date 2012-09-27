@@ -12,6 +12,7 @@
     <string name="enable_gps_dialog">Would you like to enable GPS?</string>
     <string name="do_not_display">Do not remind me again</string>
     
+    <string name="add_stop">Add Stop</string>
     <string name="available_routes">Available Routes</string>
 
 </resources>

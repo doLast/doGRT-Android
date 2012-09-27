@@ -43,6 +43,8 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	public class PinItemizedOverlay extends ItemizedOverlay {
 	   	Context mContext = null;
 	   	String stop_id = null;
+	   	String stop_name = null;
+	   	
 		private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
 		
 		public PinItemizedOverlay(Drawable defaultMarker) {
@@ -74,16 +76,29 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		  AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
 		  String[] stop_with_id = item.getSnippet().split(",");
 		  stop_id = stop_with_id[0];
+		  stop_name = stop_with_id[1];
 		  builder.setTitle(item.getTitle())
-		  			.setMessage(stop_with_id[1])
-		  			.setPositiveButton(R.string.available_routes, new DialogInterface.OnClickListener() {
+		  			.setMessage(stop_name)
+		  			.setNegativeButton(R.string.available_routes, new DialogInterface.OnClickListener() {
 	        			@Override
 	        			public void onClick(DialogInterface dialog, int which) {
 	        				// Switch to route display
 	        	        	Intent routes_intent = new Intent(mContext, RoutesActivity.class);
 	        	        	// Pack stop id with the intent
-	        	        	routes_intent.putExtra(android.content.Intent.EXTRA_TEXT, stop_id);
+	        	        	routes_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
 	        	        	startActivity(routes_intent);
+	        			}
+	        		})
+	        		.setPositiveButton(R.string.add_stop, new DialogInterface.OnClickListener() {
+	        			@Override
+	        			public void onClick(DialogInterface dialog, int which) {
+	        				// Do an update on user's database
+	        				// Switch to main activity
+	        				Intent main_intent = new Intent(mContext, MainActivity.class);
+	        				// Pack the stop id and name with the intent
+	        				main_intent.putExtra(MainActivity.ADD_STOP, stop_id);
+	        				main_intent.putExtra(MainActivity.ADD_STOP_NAME, stop_name);
+	        				startActivity(main_intent);
 	        			}
 	        		})
 		  			.show();
@@ -108,18 +123,26 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     // Dialog IDs
 	private final int GPS_ALERT_DIALOG_ID = 0;
 	private final int BUS_STOPS_DIALOG_ID = 1;
-    
-    private MapView mapView;   
+
+    private MapView mapView;
+    // Location manager
     private LocationManager location_manager = null;
     private String location_provider = null;
+    // Map controller
     private MapController map_controller = null;
+    // GPS
     private boolean ask_gps = true;
     private GeoPoint waterloo = new GeoPoint(43468798,-80539179); // University of Waterloo
     private int zoom_level = 17;
     private int stop_delta = 7000;
+    // Overlay items
     private List<Overlay> mapOverlays = null;
     private Drawable drawable = null;
     private PinItemizedOverlay itemized_overlay = null;
+    
+    // For switching activities
+    // Haven't figure out how to clear all extra in the intent, consider doing it later
+    // private Intent main_intent = null;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -168,7 +191,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         drawable = this.getResources().getDrawable(R.drawable.flag1);
         
         // Check if user enabled GPS
-        checkGPS();
+        checkGPS();       
     }
         
     @Override
