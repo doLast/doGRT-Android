@@ -17,7 +17,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/route_name"
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:layout_height="44dp"
         android:gravity="center_vertical"
         android:paddingLeft="5dip"
         android:singleLine="true"

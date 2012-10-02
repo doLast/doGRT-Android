@@ -86,6 +86,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	        	        	Intent routes_intent = new Intent(mContext, RoutesActivity.class);
 	        	        	// Pack stop id with the intent
 	        	        	routes_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
+	        	        	routes_intent.putExtra(RoutesActivity.STOP_NAME, stop_name);
 	        	        	startActivity(routes_intent);
 	        			}
 	        		})
@@ -98,6 +99,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	        				// Pack the stop id and name with the intent
 	        				main_intent.putExtra(MainActivity.ADD_STOP, stop_id);
 	        				main_intent.putExtra(MainActivity.ADD_STOP_NAME, stop_name);
+	        	        	main_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 	        				startActivity(main_intent);
 	        			}
 	        		})
@@ -239,8 +241,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         case R.id.add_option:
             Toast.makeText(this, "Should add to favourite", Toast.LENGTH_SHORT).show();
             return true; 
-        case R.id.reset_option:
-            return true;
         case android.R.id.home:
         	Intent main_intent = new Intent(this, MainActivity.class);
         	main_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -338,7 +338,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         startActivity(settingsIntent);
     }
     
-
 	@Override
 	public void onLocationChanged(Location location) {
 		// TODO Auto-generated method stub

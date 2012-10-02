@@ -14,5 +14,11 @@
     
     <string name="add_stop">Add Stop</string>
     <string name="available_routes">Available Routes</string>
+    
+    <string name="edit_dialog_title">Edit Title</string>
+    <string name="delete_dialog_title">Delete Stop?</string>
+    
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

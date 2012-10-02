@@ -4,7 +4,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="10"
+        android:minSdkVersion="11"
         android:targetSdkVersion="15" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
@@ -29,7 +29,8 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main" 
-            android:id = "@+id/home">
+            android:id = "@+id/home"
+            android:uiOptions="splitActionBarWhenNarrow">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -38,11 +39,13 @@
         </activity>
         
         <activity 
-            android:name=".GMapsActivity">            
+            android:name=".GMapsActivity"
+            android:uiOptions="splitActionBarWhenNarrow">            
         </activity>
 
 		<activity
-		    android:name=".RoutesActivity">		    
+		    android:name=".RoutesActivity"
+		    android:uiOptions="splitActionBarWhenNarrow">		    
 		</activity>
         
     </application>

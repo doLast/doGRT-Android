@@ -29,10 +29,15 @@ import com.doLast.doGRT.database.DatabaseSchema.TripsColumns;
 
 public class RoutesActivity extends SherlockListActivity {
 	// For choosing between different view from other activities
+	public static final String STOP_NAME = "stop_name";
 	public static final String CHOOSE_ROUTES = "choose_routes";
 	public static final String MIXED_SCHEDULE = "mixed_schedule";
 	
 	private SimpleCursorAdapter adapter = null;	
+	
+	// Stop id and stop name
+	private String stop_id = null;
+	private String stop_name = null;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,35 +64,36 @@ public class RoutesActivity extends SherlockListActivity {
         // Retrieve stop id
         Bundle extras = intent.getExtras();
         if (extras != null) {
-        	String stop_id = extras.getString(MIXED_SCHEDULE);
-                
+        	stop_id = extras.getString(MIXED_SCHEDULE);
+        	stop_name = extras.getString(STOP_NAME);
         	// Display schedule
         	displaySchedule(stop_id);
         }
         
         // Assign adapter to ListView
-        setListAdapter(adapter); 
+        setListAdapter(adapter);
+        
+        
     }
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO Auto-generated method stub
-		new MenuInflater(this).inflate(R.menu.main_option_menu, menu);
+		new MenuInflater(this).inflate(R.menu.route_option_menu, menu);
 		
 		return super.onCreateOptionsMenu(menu);
 	}	
 	
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+		Intent main_intent = new Intent(this, MainActivity.class);
         switch (item.getItemId()) {
         case R.id.add_option:        	
-            return true; 
-        case R.id.reset_option:
-            return true;
-        case R.id.about_option:      	
-            return true;
+			// Switch to main activity
+			// Pack the stop id and name with the intent
+			main_intent.putExtra(MainActivity.ADD_STOP, stop_id);
+			main_intent.putExtra(MainActivity.ADD_STOP_NAME, stop_name);
         case android.R.id.home:
-        	Intent main_intent = new Intent(this, MainActivity.class);
         	main_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
         	startActivity(main_intent);
         	return true;
@@ -133,7 +139,6 @@ public class RoutesActivity extends SherlockListActivity {
         	services.moveToNext();
         }
         service_id = "'" + services.getString(0) + "'" + service_id;
-        Log.v("Service id", service_id);
                 
         return service_id;
     }
@@ -162,12 +167,11 @@ public class RoutesActivity extends SherlockListActivity {
         String orderBy = StopTimesColumns.DEPART;
         Cursor stop_times = managedQuery(
         		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);
-        Log.v("Query counts", "counts: " + stop_times.getCount());
         
         String[] uiBindFrom = { StopTimesColumns.DEPART, RoutesColumns.ROUTE_ID, RoutesColumns.LONG_NAME };
         int[] uiBindTo = { R.id.depart_time, R.id.route_name };
         adapter = new ScheduleAdapter(this, R.layout.schedule, stop_times,
-                uiBindFrom, uiBindTo);    	
+                uiBindFrom, uiBindTo);        
     }
 
     public class ScheduleAdapter extends SimpleCursorAdapter {
@@ -208,7 +212,7 @@ public class RoutesActivity extends SherlockListActivity {
 		@Override
 		public View newView(Context context, Cursor cursor, ViewGroup parent) {
 			// TODO Auto-generated method stub
-	        final View view=mInflater.inflate(R.layout.schedule,parent,false); 
+	        final View view = mInflater.inflate(R.layout.schedule, parent, false); 
 	        return view;
 		}
     	
