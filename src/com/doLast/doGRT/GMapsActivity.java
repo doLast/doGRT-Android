@@ -35,12 +35,13 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
+import com.readystatesoftware.mapviewballoons.BalloonItemizedOverlay;
 
 public class GMapsActivity extends SherlockMapActivity implements LocationListener {
 	/**
 	 * Simple itemized overlay item class
 	 */	
-	public class PinItemizedOverlay extends ItemizedOverlay {
+	public class PinItemizedOverlay extends BalloonItemizedOverlay {
 	   	Context mContext = null;
 	   	String stop_id = null;
 	   	String stop_name = null;
@@ -48,12 +49,12 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
 		
 		public PinItemizedOverlay(Drawable defaultMarker) {
-			super(boundCenterBottom(defaultMarker));
+			super(boundCenterBottom(defaultMarker), mapView);
 			// TODO Auto-generated constructor stub
 		}
 		
 		public PinItemizedOverlay(Drawable defaultMarker, Context context) {
-			  super(boundCenterBottom(defaultMarker));
+			  super(boundCenterBottom(defaultMarker), mapView);
 			  mContext = context;
 			}		
 		
@@ -70,6 +71,22 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		}
 		
 		@Override
+		protected boolean onBalloonTap(int index, OverlayItem item) {
+			// TODO Auto-generated method stub
+			String[] stop_with_id = item.getSnippet().split(",");
+			stop_id = stop_with_id[0];
+			stop_name = stop_with_id[1];
+			// Switch to route display
+        	Intent routes_intent = new Intent(mContext, RoutesActivity.class);
+        	// Pack stop id with the intent
+        	routes_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
+        	routes_intent.putExtra(RoutesActivity.STOP_NAME, stop_name);
+        	startActivity(routes_intent);
+			
+			return super.onBalloonTap(index, item);
+		}
+
+		/*@Override
 		protected boolean onTap(int index) {
 		  OverlayItem item = mOverlays.get(index);
 		  // This display a dialog
@@ -105,7 +122,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	        		})
 		  			.show();
 		  return true;
-		}			
+		}*/			
 		
 		@Override
 		public boolean onTouchEvent(MotionEvent event, MapView mapView) {
@@ -190,7 +207,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         
         // Setup overlay item
         mapOverlays = mapView.getOverlays();        
-        drawable = this.getResources().getDrawable(R.drawable.flag1);
+        drawable = this.getResources().getDrawable(R.drawable.marker);
         
         // Check if user enabled GPS
         checkGPS();       
@@ -227,13 +244,13 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         return false;
     }
 
-	@Override
+/*	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO Auto-generated method stub
 		new MenuInflater(this).inflate(R.menu.map_option_menu, menu);
 		
 		return super.onCreateOptionsMenu(menu);
-	}    
+	}*/    
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -309,7 +326,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         // Display all bus stops up to MAX_STOPS_IN_MAP stops
         for(int i = 0; i < stops.getCount() && i < MAX_STOPS_IN_MAP; i += 1) {
         	GeoPoint point = new GeoPoint((int)(stops.getDouble(2) * 1E6), (int)(stops.getDouble(3) * 1E6));
-            OverlayItem overlayitem = new OverlayItem(point, "Stop", stops.getString(0) + "," + stops.getString(1));            
+            OverlayItem overlayitem = new OverlayItem(point, "Stop", stops.getString(0) + ", " + stops.getString(1));            
             itemized_overlay.addOverlay(overlayitem);
         	stops.moveToNext();
         }
