@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +27,7 @@ import com.doLast.doGRT.database.DatabaseSchema.CalendarColumns;
 import com.doLast.doGRT.database.DatabaseSchema.RoutesColumns;
 import com.doLast.doGRT.database.DatabaseSchema.StopTimesColumns;
 import com.doLast.doGRT.database.DatabaseSchema.TripsColumns;
+import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
 
 public class RoutesActivity extends SherlockListActivity {
 	// For choosing between different view from other activities
@@ -59,7 +61,6 @@ public class RoutesActivity extends SherlockListActivity {
         if (intent.getData() == null) {
             intent.setData(StopTimesColumns.CONTENT_URI);
         }
-        //setContentView(R.layout.stop_time);
         
         // Retrieve stop id
         Bundle extras = intent.getExtras();
@@ -68,16 +69,25 @@ public class RoutesActivity extends SherlockListActivity {
         	stop_name = extras.getString(STOP_NAME);
         	// Display schedule
         	displaySchedule(stop_id);
-        }
-        
-        // Assign adapter to ListView
-        setListAdapter(adapter);
-        
-        
-    }
+        }        
+    }	
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onPrepareOptionsMenu(Menu menu) {
+        // Check if stop_id already exist, do not display add button
+		if (stop_id != null) {
+	        String[] projection = { UserBusStopsColumns.USER_ID };
+	        String selection = UserBusStopsColumns.STOP_ID + " = " + stop_id;
+	        Cursor user = managedQuery(UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
+	        if (user.getCount() > 0) menu.removeItem(R.id.add_option);
+		}
+		
+		// TODO Auto-generated method stub
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {				
 		// TODO Auto-generated method stub
 		new MenuInflater(this).inflate(R.menu.route_option_menu, menu);
 		
@@ -92,18 +102,20 @@ public class RoutesActivity extends SherlockListActivity {
 			// Switch to main activity
 			// Pack the stop id and name with the intent
 			main_intent.putExtra(MainActivity.ADD_STOP, stop_id);
-			main_intent.putExtra(MainActivity.ADD_STOP_NAME, stop_name);
+			main_intent.putExtra(MainActivity.ADD_STOP_NAME, stop_name);        
         case android.R.id.home:
-        	main_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        	main_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         	startActivity(main_intent);
         	return true;
+        case R.id.route:
+        	
         }
  
         return super.onOptionsItemSelected(item);
     }
     
     private String getServiecId() {
-    	String service_id = new String("");
+    	String service_ids = new String("");
     	String selection = new String("");
         switch(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
         case Calendar.SUNDAY:
@@ -134,18 +146,18 @@ public class RoutesActivity extends SherlockListActivity {
         String[] projection = { CalendarColumns.SERVICE_ID };
         Cursor services = managedQuery(CalendarColumns.CONTENT_URI, projection, selection, null, null);
         services.moveToFirst();
-        if (services.getCount() > 1) {
-        	service_id = " OR " + TripsColumns.SERVICE_ID + " = '" + services.getString(0) + "'";
+        for(int i = 0; i < services.getCount() - 1; i += 1){
+        	service_ids += " OR " + TripsColumns.SERVICE_ID + " = '" + services.getString(0) + "'";
         	services.moveToNext();
         }
-        service_id = "'" + services.getString(0) + "'" + service_id;
+        service_ids = TripsColumns.SERVICE_ID + " = '" + services.getString(0) + "'" + service_ids;
                 
-        return service_id;
+        return service_ids;
     }
     
     private void displaySchedule(String stop_id) {
         // Determine service id
-    	String service_id = getServiecId();
+    	String service_ids = getServiecId();
     	
         // Remember to perform an alias of our own primary key to _id so the adapter knows what to do
         String[] projection = { StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.TRIP_ID + " as _id", 
@@ -163,7 +175,7 @@ public class RoutesActivity extends SherlockListActivity {
         String selection =  stop_time_id + " = " + stop_id + " AND " +
         					stop_time_trip_id + " = " + trip_trip_id + " AND " +
         					trip_route_id + " = " + route_route_id + " AND " +
-        					"(" + trip_service_id + " = " + service_id + ")";
+        					"(" + service_ids + ")";
         String orderBy = StopTimesColumns.DEPART;
         Cursor stop_times = managedQuery(
         		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);
@@ -171,7 +183,31 @@ public class RoutesActivity extends SherlockListActivity {
         String[] uiBindFrom = { StopTimesColumns.DEPART, RoutesColumns.ROUTE_ID, RoutesColumns.LONG_NAME };
         int[] uiBindTo = { R.id.depart_time, R.id.route_name };
         adapter = new ScheduleAdapter(this, R.layout.schedule, stop_times,
-                uiBindFrom, uiBindTo);        
+                uiBindFrom, uiBindTo);
+                        
+        // Assign adapter to ListView        
+        setListAdapter(adapter);
+        
+        // Move adapter to schedule close to current time
+        Calendar time = Calendar.getInstance();
+        int cur_time = time.get(Calendar.HOUR_OF_DAY) * 10000;
+        cur_time += time.get(Calendar.MINUTE) * 100;
+        cur_time += time.get(Calendar.SECOND);
+        
+        // Iterate through cursor
+        int cur_pos = 0;
+        stop_times.moveToFirst();
+        for(int i = 0; i < stop_times.getCount(); i += 1) {
+        	int depart = stop_times.getInt(1); // Get the departure time from cursor as and integer
+        	if ( depart > cur_time ) {
+        		cur_pos = i;
+        		break;
+        	}
+        	stop_times.moveToNext();
+        }
+        ListView list_view = getListView();
+        list_view.setSelection(cur_pos);   
+       
     }
 
     public class ScheduleAdapter extends SimpleCursorAdapter {
@@ -206,7 +242,7 @@ public class RoutesActivity extends SherlockListActivity {
 			// Keep original route name
 			TextView route_view = (TextView)view.findViewById(R.id.route_name);
 			route_view.setText(cursor.getString(cursor.getColumnIndex(RoutesColumns.ROUTE_ID)) + " " +
-								cursor.getString(cursor.getColumnIndex(RoutesColumns.LONG_NAME)));
+								cursor.getString(cursor.getColumnIndex(RoutesColumns.LONG_NAME)));	
 		}
 
 		@Override

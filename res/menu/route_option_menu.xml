@@ -4,5 +4,9 @@
   <item android:id="@+id/add_option"
     android:title="Add"
     android:icon="@drawable/plus"       
-    android:showAsAction="ifRoom|withText"/>
+    android:showAsAction="always|withText"/>
+  <item android:id="@+id/route"
+    android:title="Locate"
+    android:icon="@drawable/flag1"       
+    android:showAsAction="always|withText"/>
 </menu>

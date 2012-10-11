@@ -5,7 +5,7 @@
     		android:icon="@drawable/document"
     		android:showAsAction="ifRoom|withText"/>
         <item android:id="@+id/delete_option"
-    		android:title="Edit"
+    		android:title="Delete"
     		android:icon="@drawable/trash"
     		android:showAsAction="ifRoom|withText"/>
 </menu>
