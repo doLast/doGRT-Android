@@ -18,6 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -29,9 +31,10 @@ import com.doLast.doGRT.database.DatabaseSchema.StopTimesColumns;
 import com.doLast.doGRT.database.DatabaseSchema.TripsColumns;
 import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
 
-public class RoutesActivity extends SherlockListActivity {
+public class RoutesActivity extends SherlockFragmentActivity {
 	// For choosing between different view from other activities
 	public static final String STOP_NAME = "stop_name";
+	public static final String STOP_TITLE = "stop_title";
 	public static final String CHOOSE_ROUTES = "choose_routes";
 	public static final String MIXED_SCHEDULE = "mixed_schedule";
 	
@@ -40,6 +43,10 @@ public class RoutesActivity extends SherlockListActivity {
 	// Stop id and stop name
 	private String stop_id = null;
 	private String stop_name = null;
+	private String stop_title = null;
+	
+	// List view of the activity
+	private ListView list_view = null;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,14 +69,19 @@ public class RoutesActivity extends SherlockListActivity {
             intent.setData(StopTimesColumns.CONTENT_URI);
         }
         
+        // Set content view and find list view
+        setContentView(R.layout.schedule);
+        list_view = (ListView)findViewById(R.id.schedule_list_view);
+        
         // Retrieve stop id
         Bundle extras = intent.getExtras();
         if (extras != null) {
         	stop_id = extras.getString(MIXED_SCHEDULE);
         	stop_name = extras.getString(STOP_NAME);
+        	stop_title = extras.getString(STOP_TITLE);
         	// Display schedule
         	displaySchedule(stop_id);
-        }        
+        }                
     }	
 
 	@Override
@@ -79,7 +91,11 @@ public class RoutesActivity extends SherlockListActivity {
 	        String[] projection = { UserBusStopsColumns.USER_ID };
 	        String selection = UserBusStopsColumns.STOP_ID + " = " + stop_id;
 	        Cursor user = managedQuery(UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
-	        if (user.getCount() > 0) menu.removeItem(R.id.add_option);
+	        if (user.getCount() > 0) {
+	        	menu.removeItem(R.id.add_option);
+	        } else {
+	        	menu.removeItem(R.id.delete);
+	        }
 		}
 		
 		// TODO Auto-generated method stub
@@ -89,7 +105,7 @@ public class RoutesActivity extends SherlockListActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {				
 		// TODO Auto-generated method stub
-		new MenuInflater(this).inflate(R.menu.route_option_menu, menu);
+		new MenuInflater(this).inflate(R.menu.schedule_option_menu, menu);
 		
 		return super.onCreateOptionsMenu(menu);
 	}	
@@ -109,6 +125,11 @@ public class RoutesActivity extends SherlockListActivity {
         	return true;
         case R.id.route:
         	
+        	return true;
+        case R.id.delete:
+            SherlockDialogFragment newFragment = MyDialogFragment.newInstance(MyDialogFragment.DELETE_DIALOG_ID, stop_id, stop_title);
+            newFragment.show(getSupportFragmentManager(), String.valueOf(MyDialogFragment.DELETE_DIALOG_ID));
+            return true;
         }
  
         return super.onOptionsItemSelected(item);
@@ -183,10 +204,10 @@ public class RoutesActivity extends SherlockListActivity {
         String[] uiBindFrom = { StopTimesColumns.DEPART, RoutesColumns.ROUTE_ID, RoutesColumns.LONG_NAME };
         int[] uiBindTo = { R.id.depart_time, R.id.route_name };
         adapter = new ScheduleAdapter(this, R.layout.schedule, stop_times,
-                uiBindFrom, uiBindTo);
-                        
+                uiBindFrom, uiBindTo);                     
+        
         // Assign adapter to ListView        
-        setListAdapter(adapter);
+        list_view.setAdapter(adapter);
         
         // Move adapter to schedule close to current time
         Calendar time = Calendar.getInstance();
@@ -205,9 +226,8 @@ public class RoutesActivity extends SherlockListActivity {
         	}
         	stop_times.moveToNext();
         }
-        ListView list_view = getListView();
-        list_view.setSelection(cur_pos);   
-       
+
+        list_view.setSelection(cur_pos);       
     }
 
     public class ScheduleAdapter extends SimpleCursorAdapter {
@@ -224,8 +244,13 @@ public class RoutesActivity extends SherlockListActivity {
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
+			// Check if the view has already deen inflated
+			View v = view;
+			if(v == null)
+				v = mInflater.inflate(R.id.schedule_row, null);
+			
 			// TODO Auto-generated method stub
-			TextView time_view = (TextView)view.findViewById(R.id.depart_time);
+			TextView time_view = (TextView)v.findViewById(R.id.depart_time);
 			// Truncate the time into a readable format
 			String time = cursor.getString(cursor.getColumnIndex(StopTimesColumns.DEPART));
 			String second = time.substring(time.length() - 2, time.length());
@@ -240,7 +265,7 @@ public class RoutesActivity extends SherlockListActivity {
 			time_view.setText(hour + ":" + minute);			
 
 			// Keep original route name
-			TextView route_view = (TextView)view.findViewById(R.id.route_name);
+			TextView route_view = (TextView)v.findViewById(R.id.route_name);
 			route_view.setText(cursor.getString(cursor.getColumnIndex(RoutesColumns.ROUTE_ID)) + " " +
 								cursor.getString(cursor.getColumnIndex(RoutesColumns.LONG_NAME)));	
 		}
@@ -248,7 +273,7 @@ public class RoutesActivity extends SherlockListActivity {
 		@Override
 		public View newView(Context context, Cursor cursor, ViewGroup parent) {
 			// TODO Auto-generated method stub
-	        final View view = mInflater.inflate(R.layout.schedule, parent, false); 
+	        final View view = mInflater.inflate(R.layout.schedule_row, parent, false); 
 	        return view;
 		}
     	

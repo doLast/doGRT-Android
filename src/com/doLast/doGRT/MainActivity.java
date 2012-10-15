@@ -14,7 +14,6 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -33,6 +32,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CheckBox;
 import android.widget.CheckedTextView;
 import android.widget.CompoundButton;
@@ -42,13 +42,16 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentActivity;
 
-public class MainActivity extends SherlockListActivity {
+public class MainActivity extends SherlockFragmentActivity {
 	// For adding a new stop from other activities
 	public static final String ADD_STOP = "add_stop";
 	public static final String ADD_STOP_NAME = "add_stop_name";
 	
-	private ActionMode action_mode = null;
+	private com.actionbarsherlock.view.ActionMode action_mode = null;
 	private ListView list_view = null;
 	
 	// For action mode to update or delete
@@ -89,9 +92,11 @@ public class MainActivity extends SherlockListActivity {
         	// Remove the extras
         	getIntent().removeExtra(ADD_STOP);
         	getIntent().removeExtra(ADD_STOP_NAME);
-        }        
+        }
         
-        list_view = getListView();
+        setContentView(R.layout.activity_main);
+        
+        list_view = (ListView)findViewById(R.id.main_list_view);
         // Register long press event
         list_view.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
@@ -118,6 +123,32 @@ public class MainActivity extends SherlockListActivity {
 				return true;
 			}        	
 		});
+        // Register click listener
+        list_view.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> l, View v, int position,
+					long id) {
+				// TODO Auto-generated method stub
+			    String[] projection = { UserBusStopsColumns.STOP_ID };
+			    String selection = UserBusStopsColumns.USER_ID + " = " + id;
+			    Cursor user_stop = managedQuery(
+			        		UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
+			    // Should have exactly one entry
+			    if (user_stop.getCount() == 1) {
+			    	user_stop.moveToFirst();
+			        String stop_id = user_stop.getString(0);
+			        // Switch to routes display
+			        Intent route_intent = new Intent(MainActivity.this, RoutesActivity.class);
+			        route_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
+			        TextView view = (TextView)v;
+			        route_intent.putExtra(RoutesActivity.STOP_TITLE, view.getText());
+			        startActivity(route_intent);
+			    } else {
+			      	Log.e("Wrong id", "wrong id?");        	
+			    }
+				//super.onListItemClick(l, v, position, id);
+			}          	
+        });
         
         // Remember to perform an alias of our own primary key to _id so the adapter knows what to do
         String[] projection = { UserBusStopsColumns.USER_ID + " as _id", UserBusStopsColumns.STOP_ID, UserBusStopsColumns.TITLE };
@@ -130,8 +161,8 @@ public class MainActivity extends SherlockListActivity {
                 uiBindFrom, uiBindTo);
 
         // Assign adapter to ListView
-        setListAdapter(adapter);        
-              
+        list_view.setAdapter(adapter);
+               
         // Forcing the overflow menu (3 dots menu)
         try {
             ViewConfiguration config = ViewConfiguration.get(this);
@@ -169,48 +200,51 @@ public class MainActivity extends SherlockListActivity {
         return super.onOptionsItemSelected(item);
     }
 
-	@Override
+/*	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {	
 		// TODO Auto-generated method stub					
-	    String[] projection = { UserBusStopsColumns.STOP_ID };
-	    String selection = UserBusStopsColumns.USER_ID + " = " + id;
-	    Cursor user_stop = managedQuery(
-	        		UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
-	    // Should have exactly one entry
-	    if (user_stop.getCount() == 1) {
-	    	user_stop.moveToFirst();
-	        String stop_id = user_stop.getString(0);
-	        // Switch to routes display
-	        Intent route_intent = new Intent(this, RoutesActivity.class);
-	        route_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
-	        startActivity(route_intent);
-	    } else {
-	      	Log.e("Wrong id", "wrong id?");        	
-	    }
-		//super.onListItemClick(l, v, position, id);
-	}    
+
+	}*/    
 	
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         // Subtitle of the action bar
-        getActionBar().setSubtitle("Long press to start selection");
+        getSupportActionBar().setSubtitle("Long press to start selection");
     }
 
+	@TargetApi(11)
 	private void showFragmentDialog(int dialog_id) {
-        DialogFragment newFragment = MyDialogFragment.newInstance(dialog_id, stop_id, stop_title);
-        newFragment.show(getFragmentManager(), String.valueOf(dialog_id));
+        SherlockDialogFragment newFragment = MyDialogFragment.newInstance(dialog_id, stop_id, stop_title);
+        newFragment.show(getSupportFragmentManager(), String.valueOf(dialog_id));
     }
     
 	/** 
      * The CAB of edit option 
      * NOTE: This is only available in API 11. Need to modify
      */
-    private class UserCallback implements Callback {
-    	
+    private class UserCallback implements com.actionbarsherlock.view.ActionMode.Callback {
+
 		@Override
-		public boolean onActionItemClicked(ActionMode mode,
-				android.view.MenuItem item) {
+		public boolean onCreateActionMode(
+				com.actionbarsherlock.view.ActionMode mode, Menu menu) {
+			// TODO Auto-generated method stub
+	        // Inflate a menu resource providing context menu items
+			com.actionbarsherlock.view.MenuInflater inflater = mode.getMenuInflater();
+	        inflater.inflate(R.menu.edit_option_menu, menu);
+	        return true;
+		}
+
+		@Override
+		public boolean onPrepareActionMode(
+				com.actionbarsherlock.view.ActionMode mode, Menu menu) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean onActionItemClicked(
+				com.actionbarsherlock.view.ActionMode mode, MenuItem item) {
 			// TODO Auto-generated method stub
 			// Get the id of the item from the tag
 	        switch (item.getItemId()) {
@@ -227,29 +261,13 @@ public class MainActivity extends SherlockListActivity {
             default:
                 return false;
 	        }
-		}
+	    }
 
 		@Override
-		public boolean onCreateActionMode(ActionMode mode,
-				android.view.Menu menu) {
+		public void onDestroyActionMode(
+				com.actionbarsherlock.view.ActionMode mode) {
 			// TODO Auto-generated method stub
-	        // Inflate a menu resource providing context menu items
-	        android.view.MenuInflater inflater = mode.getMenuInflater();
-	        inflater.inflate(R.menu.edit_option_menu, menu);
-	        return true;
-		}
-
-		@Override
-		public boolean onPrepareActionMode(ActionMode mode,
-				android.view.Menu menu) {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public void onDestroyActionMode(ActionMode mode) {
-			// TODO Auto-generated method stub			
-			action_mode = null;
+			action_mode = null;			
 		}
     }
 }

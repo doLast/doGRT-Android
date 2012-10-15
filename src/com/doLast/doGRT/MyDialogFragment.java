@@ -2,16 +2,17 @@ package com.doLast.doGRT;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
 
+import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
 
-public class MyDialogFragment extends DialogFragment {
+
+public class MyDialogFragment extends SherlockDialogFragment {
 	private final static String DIALOG_ID = "id";
 	private final static String STOP_ID = "stop_id";
 	private final static String STOP_TITLE = "stop_title";
@@ -21,7 +22,7 @@ public class MyDialogFragment extends DialogFragment {
 	public static final int DELETE_DIALOG_ID = 1;
 	
     /**
-     * Create a new instance of MyDialogFragment, providing id
+     * Create a new instance of MyDialogFragment, providing ids
      * as an argument.
      */
     static MyDialogFragment newInstance(int dialog_id, String stop_id, String stop_title) {

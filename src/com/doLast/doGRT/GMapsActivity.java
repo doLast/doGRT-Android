@@ -10,6 +10,7 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.location.Criteria;
@@ -19,7 +20,10 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -73,9 +77,9 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		@Override
 		protected boolean onBalloonTap(int index, OverlayItem item) {
 			// TODO Auto-generated method stub
-			String[] stop_with_id = item.getSnippet().split(",");
-			stop_id = stop_with_id[0];
-			stop_name = stop_with_id[1];
+
+			stop_id = item.getSnippet();
+			stop_name = item.getTitle();
 			// Switch to route display
         	Intent routes_intent = new Intent(mContext, RoutesActivity.class);
         	// Pack stop id with the intent
@@ -83,7 +87,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         	routes_intent.putExtra(RoutesActivity.STOP_NAME, stop_name);
         	startActivity(routes_intent);
 			
-			return super.onBalloonTap(index, item);
+			return true;
 		}
 
 		/*@Override
@@ -127,7 +131,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		@Override
 		public boolean onTouchEvent(MotionEvent event, MapView mapView) {
 			// TODO Auto-generated method stub
-			// Activiely update the stops
+			// Actively update the stops
 			dropPins(mapView.getMapCenter());
 			return super.onTouchEvent(event, mapView);
 		}
@@ -138,6 +142,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		}
 	}
 	
+	// Number of stops to be displayed
     private final int MAX_STOPS_IN_MAP = 50;
     // Dialog IDs
 	private final int GPS_ALERT_DIALOG_ID = 0;
@@ -150,7 +155,8 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     // Map controller
     private MapController map_controller = null;
     // GPS
-    private boolean ask_gps = true;
+    private final String ASK_GPS = "ask_gps";
+    private boolean ask_gps;
     private GeoPoint waterloo = new GeoPoint(43468798,-80539179); // University of Waterloo
     private int zoom_level = 17;
     private int stop_delta = 7000;
@@ -158,10 +164,9 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     private List<Overlay> mapOverlays = null;
     private Drawable drawable = null;
     private PinItemizedOverlay itemized_overlay = null;
-    
-    // For switching activities
-    // Haven't figure out how to clear all extra in the intent, consider doing it later
-    // private Intent main_intent = null;
+    // Perference setting
+    public static final String PREFS_NAME = "map_preference";
+    private SharedPreferences settings = null;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -175,23 +180,29 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         // Use the "navigate up" button
         ActionBar action_bar = getSupportActionBar();
         action_bar.setDisplayHomeAsUpEnabled(true);
-        
-        // Setting center to Waterloo
-        map_controller = mapView.getController();
-        map_controller.setCenter(waterloo);
-        map_controller.setZoom(zoom_level);
-        
-        // Try getting the current location (Not working)
+                
+        // Try getting the current location
         location_manager = (LocationManager) getSystemService(LOCATION_SERVICE);
         Criteria criteria = new Criteria();
-        location_provider = location_manager.getBestProvider(criteria, true);
+        location_provider = location_manager.getBestProvider(criteria, false);
         if (location_provider != null) {
         	//Log.v("Found provider", location_provider);
         } else {
         	Toast.makeText(this, "Unable to find a proper provider", Toast.LENGTH_SHORT).show();
         }
         
-        // Put down stops around the center location
+        // Setting center to current location or University of Waterloo
+        map_controller = mapView.getController();
+	    // Move to current location, if one exist
+	    Location cur_location = location_manager.getLastKnownLocation(location_provider);
+	    if (cur_location != null) {
+		    map_controller.setCenter(new GeoPoint((int)(cur_location.getLatitude() * 1e6), 
+		    									  (int)(cur_location.getLongitude() * 1e6)));
+	    } else {
+	    	map_controller.setCenter(waterloo);
+	    }
+        map_controller.setZoom(zoom_level);
+        
         /* If no data is given in the Intent that started this Activity, then this Activity
          * was started when the intent filter matched a MAIN action. We should use the default
          * provider URI.
@@ -208,6 +219,10 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         // Setup overlay item
         mapOverlays = mapView.getOverlays();        
         drawable = this.getResources().getDrawable(R.drawable.marker);
+        
+        // Restore preference
+        settings = getSharedPreferences(PREFS_NAME, 0);
+        ask_gps = settings.getBoolean(ASK_GPS, true);
         
         // Check if user enabled GPS
         checkGPS();       
@@ -226,7 +241,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		// TODO Auto-generated method stub
 		super.onResume();
 		/* Request updates at startup */
-	    location_manager.requestLocationUpdates(location_provider, 400, 1, this);
+	    location_manager.requestLocationUpdates(location_provider, 400, 1, this);	    
 
         // Drop pins around the center area
         dropPins(mapView.getMapCenter()); 
@@ -276,19 +291,32 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	    case GPS_ALERT_DIALOG_ID:
 	    	// Create alert dialog for asking user to enable gps
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			CharSequence[] remember = {"Do not display this again"};
-			builder.setTitle(R.string.enable_gps)
-					.setMessage(R.string.enable_gps_dialog)                    
+			LayoutInflater inflater = LayoutInflater.from(this);
+			View layout = inflater.inflate(R.layout.gps_alert_dialog, null);
+			final CheckBox do_not_display = (CheckBox)layout.findViewById(R.id.gps_check_box);
+			
+			builder.setView(layout)
+					.setTitle(R.string.enable_gps)					
+					.setMessage(R.string.enable_gps_dialog)					
 	        		.setNegativeButton(R.string.enable_gps, new DialogInterface.OnClickListener() {
 	        			@Override
 	        			public void onClick(DialogInterface dialog, int which) {
-	        				enableLocationSettings();                        	
+	        				if (do_not_display.isChecked()) {
+	        					SharedPreferences.Editor editor = settings.edit();
+	        					editor.putBoolean(ASK_GPS, false);
+	        					editor.commit();
+	        				}
+	        				enableLocationSettings();              	
 	        			}
 	        		})
-	        		.setPositiveButton(R.string.do_not_enable_gps, new DialogInterface.OnClickListener() {
+	        		.setPositiveButton(R.string.no, new DialogInterface.OnClickListener() {
 	        			@Override
 	        			public void onClick(DialogInterface dialog, int which) {
-	        				// Do nothing
+	        				if (do_not_display.isChecked()) {
+	        					SharedPreferences.Editor editor = settings.edit();
+	        					editor.putBoolean(ASK_GPS, false);
+	        					editor.commit();
+	        				}
 	        			}
 	        		});
 	        dialog = builder.create();
@@ -319,16 +347,21 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         
         Cursor stops = managedQuery(
         		DatabaseSchema.StopsColumns.CONTENT_URI, projection, selection, null, null);
-                      
+        
+        // Overlay items
         mapOverlays.clear();
+        // Remove the previous balloon if exists
+        if (itemized_overlay != null) itemized_overlay.hideAllBalloons();
         itemized_overlay = new PinItemizedOverlay(drawable, this);
-        stops.moveToFirst();        
-        // Display all bus stops up to MAX_STOPS_IN_MAP stops
-        for(int i = 0; i < stops.getCount() && i < MAX_STOPS_IN_MAP; i += 1) {
-        	GeoPoint point = new GeoPoint((int)(stops.getDouble(2) * 1E6), (int)(stops.getDouble(3) * 1E6));
-            OverlayItem overlayitem = new OverlayItem(point, "Stop", stops.getString(0) + ", " + stops.getString(1));            
-            itemized_overlay.addOverlay(overlayitem);
-        	stops.moveToNext();
+        if (stops != null) {
+	        stops.moveToFirst();        
+	        // Display all bus stops up to MAX_STOPS_IN_MAP stops
+	        for(int i = 0; i < stops.getCount() && i < MAX_STOPS_IN_MAP; i += 1) {
+	        	GeoPoint point = new GeoPoint((int)(stops.getDouble(2) * 1E6), (int)(stops.getDouble(3) * 1E6));
+	            OverlayItem overlayitem = new OverlayItem(point, stops.getString(1), stops.getString(0));            
+	            itemized_overlay.addOverlay(overlayitem);
+	        	stops.moveToNext();
+	        }
         }
         mapOverlays.add(itemized_overlay);
     }

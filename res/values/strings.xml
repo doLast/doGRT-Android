@@ -8,7 +8,7 @@
     <string name="text">Text</string>
     
     <string name="enable_gps">Enable GPS?</string>
-    <string name="do_not_enable_gps">No</string>
+    <string name="no">No</string>
     <string name="enable_gps_dialog">Would you like to enable GPS?</string>
     <string name="do_not_display">Do not remind me again</string>
     
