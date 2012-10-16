@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
   
-  <item android:id="@+id/add_option"
-    android:title="Add"
-    android:icon="@drawable/plus"       
+  <item android:id="@+id/current_location"
+    android:title="Current Location"
+    android:icon="@drawable/green_marker"       
     android:showAsAction="ifRoom|withText"/>
 </menu>

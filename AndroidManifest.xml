@@ -40,7 +40,7 @@
         
         <activity 
             android:name=".GMapsActivity"
-            android:uiOptions="splitActionBarWhenNarrow">            
+            >            
         </activity>
 
 		<activity

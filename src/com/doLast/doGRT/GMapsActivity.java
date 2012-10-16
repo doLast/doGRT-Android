@@ -18,6 +18,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,6 +36,8 @@ import com.actionbarsherlock.view.*;
 import com.actionbarsherlock.view.MenuInflater;
 import com.doLast.doGRT.R;
 import com.doLast.doGRT.database.DatabaseSchema;
+import com.doLast.doGRT.database.DatabaseSchema.CalendarColumns;
+import com.doLast.doGRT.database.DatabaseSchema.StopsColumns;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
@@ -96,7 +99,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		public boolean onTouchEvent(MotionEvent event, MapView mapView) {
 			// TODO Auto-generated method stub
 			// Actively update the stops
-			dropPins(mapView.getMapCenter());
+			dropPins(mapView.getMapCenter(), true);
 			return super.onTouchEvent(event, mapView);
 		}
 
@@ -117,7 +120,10 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     // Dialog IDs
 	private final int GPS_ALERT_DIALOG_ID = 0;
 	private final int BUS_STOPS_DIALOG_ID = 1;
-	// Location for centering if requested
+	// For locating stop
+	public static final String LOCATE = "locate";
+	private String stop_id = null;
+	
 	
     private MapView mapView;
     // Location manager
@@ -132,6 +138,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     private int zoom_level = 17;
     private int stop_delta = 7000;
     private Location cur_location = null;
+    private GeoPoint cur_location_point = null;
     // Overlay items
     private List<Overlay> mapOverlays = null;
     private Drawable red_drawable = null;
@@ -157,7 +164,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         ActionBar action_bar = getSupportActionBar();
         action_bar.setDisplayHomeAsUpEnabled(true);
                 
-        // Try getting the current location
+        // Get the current location
         location_manager = (LocationManager) getSystemService(LOCATION_SERVICE);
         Criteria criteria = new Criteria();
         location_provider = location_manager.getBestProvider(criteria, false);
@@ -172,11 +179,13 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	    // Move to current location, if one exist
 	    cur_location = location_manager.getLastKnownLocation(location_provider);
 	    if (cur_location != null) {
-		    map_controller.setCenter(new GeoPoint((int)(cur_location.getLatitude() * 1e6), 
-		    									  (int)(cur_location.getLongitude() * 1e6)));
+	    	cur_location_point = new GeoPoint((int)(cur_location.getLatitude() * 1e6), 
+					  							(int)(cur_location.getLongitude() * 1e6));
+		    map_controller.setCenter(cur_location_point);
 	    } else {
 	    	cur_location.setLatitude(waterloo.getLatitudeE6() / 1e6);
 	    	cur_location.setLongitude(waterloo.getLongitudeE6() / 1e6);
+	    	cur_location_point = new GeoPoint(waterloo.getLatitudeE6(), waterloo.getLongitudeE6());
 	    	map_controller.setCenter(waterloo);
 	    }
         map_controller.setZoom(zoom_level);
@@ -192,19 +201,18 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         // accesses a list of notes.
         if (intent.getData() == null) {
             intent.setData(DatabaseSchema.StopsColumns.CONTENT_URI);
-        }        
+        }           
         
-        // Setup overlay item
+        // Setup overlay items
         mapOverlays = mapView.getOverlays();        
         red_drawable = this.getResources().getDrawable(R.drawable.red_marker);
         green_drawable = this.getResources().getDrawable(R.drawable.green_marker);
         itemized_overlay = new PinItemizedOverlay(red_drawable, this);
         itemized_overlay.setBalloonBottomOffset(BALLOON_PLACE_OFFSET);        
         cur_overlay = new PinItemizedOverlay(green_drawable, this);
-        OverlayItem cur_item = new OverlayItem(new GeoPoint((int)(cur_location.getLatitude() * 1e6),
-				 											(int)(cur_location.getLongitude() * 1e6)),
-				 											CURRENT_LOCATION, null);
-        cur_overlay.addOverlay(cur_item);
+        cur_overlay.setBalloonBottomOffset(BALLOON_PLACE_OFFSET);
+        OverlayItem cur_overlay_item = new OverlayItem(cur_location_point, CURRENT_LOCATION, null);
+        cur_overlay.addOverlay(cur_overlay_item);
         
         // Restore preference
         settings = getSharedPreferences(PREFS_NAME, 0);
@@ -213,8 +221,27 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         // Check if user enabled GPS
         checkGPS();               
 
-        // Drop the first pin
-        dropPins(mapView.getMapCenter()); 
+        // Retrieve stop id
+        Bundle extras = intent.getExtras();
+        GeoPoint center = null;
+                
+        if (extras != null) {
+        	// Move to the location of given stop id
+        	stop_id = extras.getString(LOCATE);
+            String[] projection = { StopsColumns.STOP_LAT, StopsColumns.STOP_LON };
+            String selection = StopsColumns.STOP_ID + " = " + stop_id;
+            Cursor stop = managedQuery(StopsColumns.CONTENT_URI, projection, selection, null, null);
+            stop.moveToFirst();
+            center = new GeoPoint((int)(stop.getDouble(0) * 1e6), (int)(stop.getDouble(1) * 1e6));
+            map_controller.setCenter(center);
+            //stop.close();
+        } else {          	
+        	center = mapView.getMapCenter();
+        }
+        
+        // Drop pins
+        dropPins(center, true);     
+        if (extras != null) itemized_overlay.onTap(center, mapView); // Tap the center stop if trying to locate        
         mapView.postInvalidate();
     }
         
@@ -245,21 +272,25 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         return false;
     }
 
-/*	@Override
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO Auto-generated method stub
 		new MenuInflater(this).inflate(R.menu.map_option_menu, menu);
 		
 		return super.onCreateOptionsMenu(menu);
-	}*/    
+	}    
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case R.id.add_option:
-            Toast.makeText(this, "Should add to favourite", Toast.LENGTH_SHORT).show();
-            return true; 
+        switch (item.getItemId()) {        
+        case R.id.current_location:
+        	// Request current location
+        	map_controller.animateTo(cur_location_point);
+        	// cur_overlay.onTap(cur_location_point, mapView);
+        	dropPins(cur_location_point, false);
+        	return true;
         case android.R.id.home:
+        	// Go back to favourite list
         	Intent main_intent = new Intent(this, MainActivity.class);
         	main_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
         	startActivity(main_intent);
@@ -291,7 +322,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     					editor.putBoolean(ASK_GPS, false);
     					editor.commit();
     				}
-				}				
+				}			
 			});
 			
 			builder.setView(layout)
@@ -321,7 +352,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	/**
      * Drop pins at bus stops on the area around the center point
      */
-    private void dropPins(GeoPoint center) {
+    private void dropPins(GeoPoint center, boolean clearPins) {
     	// Update the delta value
     	stop_delta = stop_delta + 1000 * ((int)(Math.pow(2, zoom_level - mapView.getZoomLevel())) - 1);
     	zoom_level = mapView.getZoomLevel();
@@ -340,21 +371,24 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         		DatabaseSchema.StopsColumns.CONTENT_URI, projection, selection, null, null);
         
         // Overlay items
-        mapOverlays.clear();
-        itemized_overlay.clearOverlayItems();
-        if (stops.getCount() > 0) {
-	        stops.moveToFirst();        
-	        // Display all bus stops up to MAX_STOPS_IN_MAP stops
-	        for(int i = 0; i < stops.getCount() && i < MAX_STOPS_IN_MAP; i += 1) {
-	        	GeoPoint point = new GeoPoint((int)(stops.getDouble(2) * 1E6), (int)(stops.getDouble(3) * 1E6));
-	            OverlayItem overlayitem = new OverlayItem(point, stops.getString(1), stops.getString(0));            
-	            itemized_overlay.addOverlay(overlayitem);
-	        	stops.moveToNext();
-	        }
+        if (clearPins) {
+            itemized_overlay.clearOverlayItems();
+            if (stops.getCount() > 0) {
+    	        stops.moveToFirst();        
+    	        // Display all bus stops up to MAX_STOPS_IN_MAP stops
+    	        for(int i = 0; i < stops.getCount() && i < MAX_STOPS_IN_MAP; i += 1) {
+    	        	GeoPoint point = new GeoPoint((int)(stops.getDouble(2) * 1E6), (int)(stops.getDouble(3) * 1E6));
+    	            OverlayItem overlayitem = new OverlayItem(point, stops.getString(1), stops.getString(0));            
+    	            itemized_overlay.addOverlay(overlayitem);
+    	        	stops.moveToNext();
+    	        }
+            }
+        	mapOverlays.clear();
 	        mapOverlays.add(itemized_overlay);
+            // Always add the current location to the map
+        	mapOverlays.add(cur_overlay);
         }
-        // Always add the current location to the map
-        mapOverlays.add(cur_overlay);
+        //stops.close();
     }
     
     /**

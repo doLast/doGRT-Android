@@ -29,6 +29,7 @@ import com.doLast.doGRT.database.DatabaseSchema;
 import com.doLast.doGRT.database.DatabaseSchema.CalendarColumns;
 import com.doLast.doGRT.database.DatabaseSchema.RoutesColumns;
 import com.doLast.doGRT.database.DatabaseSchema.StopTimesColumns;
+import com.doLast.doGRT.database.DatabaseSchema.StopsColumns;
 import com.doLast.doGRT.database.DatabaseSchema.TripsColumns;
 import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
 
@@ -73,7 +74,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
         // Set content view and find list view
         setContentView(R.layout.schedule);
         
-        // Retrieve stop id
+        // Retrieve extra data
         Bundle extras = intent.getExtras();
         if (extras != null) {
         	stop_id = extras.getString(MIXED_SCHEDULE);
@@ -96,8 +97,8 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	        } else {
 	        	menu.removeItem(R.id.delete);
 	        }
+			//user.close();
 		}
-		
 		// TODO Auto-generated method stub
 		return super.onPrepareOptionsMenu(menu);
 	}
@@ -124,11 +125,15 @@ public class RoutesActivity extends SherlockFragmentActivity {
         	startActivity(main_intent);
         	return true;
         case R.id.route:
-        	
+        	Intent map_intent = new Intent(this, GMapsActivity.class);
+        	map_intent.putExtra(GMapsActivity.LOCATE, stop_id);
+        	map_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        	startActivity(map_intent);            
         	return true;
         case R.id.delete:
             SherlockDialogFragment newFragment = MyDialogFragment.newInstance(MyDialogFragment.DELETE_DIALOG_ID, stop_id, stop_title);
             newFragment.show(getSupportFragmentManager(), String.valueOf(MyDialogFragment.DELETE_DIALOG_ID));
+            invalidateOptionsMenu();
             return true;
         }
  
@@ -172,7 +177,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
         	services.moveToNext();
         }
         service_ids = TripsColumns.SERVICE_ID + " = '" + services.getString(0) + "'" + service_ids;
-                
+        //services.close();
         return service_ids;
     }
     
@@ -241,6 +246,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
                 uiBindFrom, uiBindTo, cur_pos);
         list_view = (ListView)findViewById(R.id.schedule_list_view);
         list_view.setAdapter(adapter);
+        if (cur_pos >= 2) cur_pos -= 2;
         list_view.setSelection(cur_pos);        
     }
 }
