@@ -22,5 +22,7 @@
     <string name="cancel">Cancel</string>
     
     <string name="no_route">No Available Route</string>
+    <string name="left_buses">Left Buses</string>
+    <string name="coming_buses">Coming Buses</string>
 
 </resources>

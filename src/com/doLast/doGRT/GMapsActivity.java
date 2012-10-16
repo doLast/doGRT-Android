@@ -119,7 +119,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	private final int BUS_STOPS_DIALOG_ID = 1;
 	// Location for centering if requested
 	
-
     private MapView mapView;
     // Location manager
     private LocationManager location_manager = null;

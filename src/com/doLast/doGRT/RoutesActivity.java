@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -71,7 +72,6 @@ public class RoutesActivity extends SherlockFragmentActivity {
         
         // Set content view and find list view
         setContentView(R.layout.schedule);
-        list_view = (ListView)findViewById(R.id.schedule_list_view);
         
         // Retrieve stop id
         Bundle extras = intent.getExtras();
@@ -202,9 +202,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
         		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);
         
         String[] uiBindFrom = { StopTimesColumns.DEPART, RoutesColumns.ROUTE_ID, RoutesColumns.LONG_NAME };
-        int[] uiBindTo = { R.id.depart_time, R.id.route_name };
-        adapter = new ScheduleAdapter(this, R.layout.schedule, stop_times,
-                uiBindFrom, uiBindTo);                     
+        int[] uiBindTo = { R.id.depart_time, R.id.route_name };                 
                 
         // Move adapter to schedule close to current time
         Calendar time = Calendar.getInstance();
@@ -214,72 +212,35 @@ public class RoutesActivity extends SherlockFragmentActivity {
         
         // Iterate through cursor
         int cur_pos = 0;
+        //String section = LEFT_BUSES;
+        //SectionListItem[] schedule_array = new SectionListItem[stop_times.getCount()];
         stop_times.moveToFirst();
-        for(int i = 0; i < stop_times.getCount(); i += 1) {
+        for(int i = 0; i < stop_times.getCount(); i += 1) {        	
         	int depart = stop_times.getInt(1); // Get the departure time from cursor as and integer
         	if ( depart > cur_time ) {
         		cur_pos = i;
+        		//section = COMING_BUSES;
         		break;
         	}
+        	
+        	// Create the section item
+        	//schedule_array[i] = new SectionListItem(stop_times.getString(2), section);        	
         	stop_times.moveToNext();
         }
         
+        /*ScheduleAdapter array_adapter = new ScheduleAdapter(this, 
+        		R.id.route_name, schedule_array);        
+        // Try using the seciton adapter
+        SectionListAdapter section_adapter = new SectionListAdapter(getLayoutInflater(),
+                array_adapter);
+        list_view = (SectionListView)findViewById(R.id.schedule_list_view);
+        list_view.setAdapter(section_adapter);*/
+        
         // Assign adapter to ListView
+        adapter = new ScheduleAdapter(this, R.layout.schedule, stop_times,
+                uiBindFrom, uiBindTo, cur_pos);
+        list_view = (ListView)findViewById(R.id.schedule_list_view);
         list_view.setAdapter(adapter);
-        list_view.setSelection(cur_pos);  
-    }
-
-    public class ScheduleAdapter extends SimpleCursorAdapter {
-    	private Context mContext;
-    	private int mLayout;
-    	private LayoutInflater mInflater;
-    	private int cur_pos = 0;
-    	
-    	public ScheduleAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
-	        super(context, layout, c, from, to);
-	        mContext = context;
-	        mLayout = layout;
-	        mInflater = LayoutInflater.from(mContext);
-    	}
-
-		@Override
-		public void bindView(View view, Context context, Cursor cursor) {
-			// Check if the view has already been inflated
-			View v = view;
-			if(v == null)
-				v = mInflater.inflate(R.id.schedule_row, null);
-			
-			// TODO Auto-generated method stub
-			TextView time_view = (TextView)v.findViewById(R.id.depart_time);
-			// Truncate the time into a readable format
-			String time = cursor.getString(cursor.getColumnIndex(StopTimesColumns.DEPART));
-			String second = time.substring(time.length() - 2, time.length());
-			String minute = time.substring(time.length() - 4, time.length() - 2);
-			String hour = time.substring(0, time.length() - 4);
-			// Check if hour is greater than 24, change it to 0
-			if (Integer.valueOf(hour) >= 24)
-				hour = String.valueOf((Integer.valueOf(hour) - 24));
-			// Add a prefix 0 to hour less than 10
-			if (Integer.valueOf(hour) < 10)
-				hour = "0" + hour;
-			time_view.setText(hour + ":" + minute);			
-
-			// Keep original route name
-			TextView route_view = (TextView)v.findViewById(R.id.route_name);
-			route_view.setText(cursor.getString(cursor.getColumnIndex(RoutesColumns.ROUTE_ID)) + " " +
-								cursor.getString(cursor.getColumnIndex(RoutesColumns.LONG_NAME)));	
-		}
-
-		@Override
-		public View newView(Context context, Cursor cursor, ViewGroup parent) {
-			// TODO Auto-generated method stub
-	        final View view = mInflater.inflate(R.layout.schedule_row, parent, false); 
-	        return view;
-		}
-    	
-		// For separator to use
-    	public void setCurrentPosition(int pos) {
-    		cur_pos = pos;
-    	}
+        list_view.setSelection(cur_pos);        
     }
 }
