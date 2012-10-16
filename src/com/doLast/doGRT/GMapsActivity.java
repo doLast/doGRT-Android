@@ -24,6 +24,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -77,56 +79,18 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		@Override
 		protected boolean onBalloonTap(int index, OverlayItem item) {
 			// TODO Auto-generated method stub
-
-			stop_id = item.getSnippet();
-			stop_name = item.getTitle();
-			// Switch to route display
-        	Intent routes_intent = new Intent(mContext, RoutesActivity.class);
-        	// Pack stop id with the intent
-        	routes_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
-        	routes_intent.putExtra(RoutesActivity.STOP_NAME, stop_name);
-        	startActivity(routes_intent);
-			
-			return true;
-		}
-
-		/*@Override
-		protected boolean onTap(int index) {
-		  OverlayItem item = mOverlays.get(index);
-		  // This display a dialog
-		  AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-		  String[] stop_with_id = item.getSnippet().split(",");
-		  stop_id = stop_with_id[0];
-		  stop_name = stop_with_id[1];
-		  builder.setTitle(item.getTitle())
-		  			.setMessage(stop_name)
-		  			.setNegativeButton(R.string.available_routes, new DialogInterface.OnClickListener() {
-	        			@Override
-	        			public void onClick(DialogInterface dialog, int which) {
-	        				// Switch to route display
-	        	        	Intent routes_intent = new Intent(mContext, RoutesActivity.class);
-	        	        	// Pack stop id with the intent
-	        	        	routes_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
-	        	        	routes_intent.putExtra(RoutesActivity.STOP_NAME, stop_name);
-	        	        	startActivity(routes_intent);
-	        			}
-	        		})
-	        		.setPositiveButton(R.string.add_stop, new DialogInterface.OnClickListener() {
-	        			@Override
-	        			public void onClick(DialogInterface dialog, int which) {
-	        				// Do an update on user's database
-	        				// Switch to main activity
-	        				Intent main_intent = new Intent(mContext, MainActivity.class);
-	        				// Pack the stop id and name with the intent
-	        				main_intent.putExtra(MainActivity.ADD_STOP, stop_id);
-	        				main_intent.putExtra(MainActivity.ADD_STOP_NAME, stop_name);
-	        	        	main_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-	        				startActivity(main_intent);
-	        			}
-	        		})
-		  			.show();
-		  return true;
-		}*/			
+			if (item.getTitle() != CURRENT_LOCATION) {
+				stop_id = item.getSnippet();
+				stop_name = item.getTitle();
+				// Switch to route display
+	        	Intent routes_intent = new Intent(mContext, RoutesActivity.class);
+	        	// Pack stop id with the intent
+	        	routes_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
+	        	routes_intent.putExtra(RoutesActivity.STOP_NAME, stop_name);
+	        	startActivity(routes_intent);
+			}			
+			return super.onBalloonTap(index, item);
+		}		
 		
 		@Override
 		public boolean onTouchEvent(MotionEvent event, MapView mapView) {
@@ -139,6 +103,12 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		public void addOverlay(OverlayItem overlay) {
 		    mOverlays.add(overlay);
 		    populate();
+		}				
+		
+		// Clear all overlay items
+		public void clearOverlayItems() {
+			mOverlays.clear();
+			populate();
 		}
 	}
 	
@@ -147,6 +117,8 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     // Dialog IDs
 	private final int GPS_ALERT_DIALOG_ID = 0;
 	private final int BUS_STOPS_DIALOG_ID = 1;
+	// Location for centering if requested
+	
 
     private MapView mapView;
     // Location manager
@@ -160,10 +132,15 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     private GeoPoint waterloo = new GeoPoint(43468798,-80539179); // University of Waterloo
     private int zoom_level = 17;
     private int stop_delta = 7000;
+    private Location cur_location = null;
     // Overlay items
     private List<Overlay> mapOverlays = null;
-    private Drawable drawable = null;
+    private Drawable red_drawable = null;
+    private Drawable green_drawable = null;
     private PinItemizedOverlay itemized_overlay = null;
+    private PinItemizedOverlay cur_overlay = null;
+    private final String CURRENT_LOCATION = "Current Location";
+    public static int BALLOON_PLACE_OFFSET = 30;
     // Perference setting
     public static final String PREFS_NAME = "map_preference";
     private SharedPreferences settings = null;
@@ -194,11 +171,13 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         // Setting center to current location or University of Waterloo
         map_controller = mapView.getController();
 	    // Move to current location, if one exist
-	    Location cur_location = location_manager.getLastKnownLocation(location_provider);
+	    cur_location = location_manager.getLastKnownLocation(location_provider);
 	    if (cur_location != null) {
 		    map_controller.setCenter(new GeoPoint((int)(cur_location.getLatitude() * 1e6), 
 		    									  (int)(cur_location.getLongitude() * 1e6)));
 	    } else {
+	    	cur_location.setLatitude(waterloo.getLatitudeE6() / 1e6);
+	    	cur_location.setLongitude(waterloo.getLongitudeE6() / 1e6);
 	    	map_controller.setCenter(waterloo);
 	    }
         map_controller.setZoom(zoom_level);
@@ -218,14 +197,26 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         
         // Setup overlay item
         mapOverlays = mapView.getOverlays();        
-        drawable = this.getResources().getDrawable(R.drawable.marker);
+        red_drawable = this.getResources().getDrawable(R.drawable.red_marker);
+        green_drawable = this.getResources().getDrawable(R.drawable.green_marker);
+        itemized_overlay = new PinItemizedOverlay(red_drawable, this);
+        itemized_overlay.setBalloonBottomOffset(BALLOON_PLACE_OFFSET);        
+        cur_overlay = new PinItemizedOverlay(green_drawable, this);
+        OverlayItem cur_item = new OverlayItem(new GeoPoint((int)(cur_location.getLatitude() * 1e6),
+				 											(int)(cur_location.getLongitude() * 1e6)),
+				 											CURRENT_LOCATION, null);
+        cur_overlay.addOverlay(cur_item);
         
         // Restore preference
         settings = getSharedPreferences(PREFS_NAME, 0);
         ask_gps = settings.getBoolean(ASK_GPS, true);
         
         // Check if user enabled GPS
-        checkGPS();       
+        checkGPS();               
+
+        // Drop the first pin
+        dropPins(mapView.getMapCenter()); 
+        mapView.postInvalidate();
     }
         
     @Override
@@ -241,11 +232,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		// TODO Auto-generated method stub
 		super.onResume();
 		/* Request updates at startup */
-	    location_manager.requestLocationUpdates(location_provider, 400, 1, this);	    
-
-        // Drop pins around the center area
-        dropPins(mapView.getMapCenter()); 
-        mapView.postInvalidate();
+	    location_manager.requestLocationUpdates(location_provider, 400, 1, this);
 	}		
 
 	@Override
@@ -293,7 +280,20 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			LayoutInflater inflater = LayoutInflater.from(this);
 			View layout = inflater.inflate(R.layout.gps_alert_dialog, null);
+			// Register checkbox listener
 			final CheckBox do_not_display = (CheckBox)layout.findViewById(R.id.gps_check_box);
+			do_not_display.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+				@Override
+				public void onCheckedChanged(CompoundButton buttonView,
+						boolean isChecked) {
+					// TODO Auto-generated method stub
+    				if (isChecked) {
+    					SharedPreferences.Editor editor = settings.edit();
+    					editor.putBoolean(ASK_GPS, false);
+    					editor.commit();
+    				}
+				}				
+			});
 			
 			builder.setView(layout)
 					.setTitle(R.string.enable_gps)					
@@ -301,22 +301,14 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	        		.setNegativeButton(R.string.enable_gps, new DialogInterface.OnClickListener() {
 	        			@Override
 	        			public void onClick(DialogInterface dialog, int which) {
-	        				if (do_not_display.isChecked()) {
-	        					SharedPreferences.Editor editor = settings.edit();
-	        					editor.putBoolean(ASK_GPS, false);
-	        					editor.commit();
-	        				}
+
 	        				enableLocationSettings();              	
 	        			}
 	        		})
 	        		.setPositiveButton(R.string.no, new DialogInterface.OnClickListener() {
 	        			@Override
 	        			public void onClick(DialogInterface dialog, int which) {
-	        				if (do_not_display.isChecked()) {
-	        					SharedPreferences.Editor editor = settings.edit();
-	        					editor.putBoolean(ASK_GPS, false);
-	        					editor.commit();
-	        				}
+	        				// Do nothing
 	        			}
 	        		});
 	        dialog = builder.create();
@@ -328,7 +320,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	}
 
 	/**
-     * Drop pins at bus stops on the area around the 0 center point
+     * Drop pins at bus stops on the area around the center point
      */
     private void dropPins(GeoPoint center) {
     	// Update the delta value
@@ -350,10 +342,8 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         
         // Overlay items
         mapOverlays.clear();
-        // Remove the previous balloon if exists
-        if (itemized_overlay != null) itemized_overlay.hideAllBalloons();
-        itemized_overlay = new PinItemizedOverlay(drawable, this);
-        if (stops != null) {
+        itemized_overlay.clearOverlayItems();
+        if (stops.getCount() > 0) {
 	        stops.moveToFirst();        
 	        // Display all bus stops up to MAX_STOPS_IN_MAP stops
 	        for(int i = 0; i < stops.getCount() && i < MAX_STOPS_IN_MAP; i += 1) {
@@ -362,8 +352,10 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	            itemized_overlay.addOverlay(overlayitem);
 	        	stops.moveToNext();
 	        }
+	        mapOverlays.add(itemized_overlay);
         }
-        mapOverlays.add(itemized_overlay);
+        // Always add the current location to the map
+        mapOverlays.add(cur_overlay);
     }
     
     /**
@@ -391,7 +383,10 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	@Override
 	public void onLocationChanged(Location location) {
 		// TODO Auto-generated method stub
-		
+
+        // Drop pins if location changes
+        //dropPins(mapView.getMapCenter()); 
+        //mapView.postInvalidate();
 	}
 
 	@Override

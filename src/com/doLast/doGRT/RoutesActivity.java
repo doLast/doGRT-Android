@@ -205,10 +205,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
         int[] uiBindTo = { R.id.depart_time, R.id.route_name };
         adapter = new ScheduleAdapter(this, R.layout.schedule, stop_times,
                 uiBindFrom, uiBindTo);                     
-        
-        // Assign adapter to ListView        
-        list_view.setAdapter(adapter);
-        
+                
         // Move adapter to schedule close to current time
         Calendar time = Calendar.getInstance();
         int cur_time = time.get(Calendar.HOUR_OF_DAY) * 10000;
@@ -226,14 +223,17 @@ public class RoutesActivity extends SherlockFragmentActivity {
         	}
         	stop_times.moveToNext();
         }
-
-        list_view.setSelection(cur_pos);       
+        
+        // Assign adapter to ListView
+        list_view.setAdapter(adapter);
+        list_view.setSelection(cur_pos);  
     }
 
     public class ScheduleAdapter extends SimpleCursorAdapter {
     	private Context mContext;
     	private int mLayout;
     	private LayoutInflater mInflater;
+    	private int cur_pos = 0;
     	
     	public ScheduleAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
 	        super(context, layout, c, from, to);
@@ -244,7 +244,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
-			// Check if the view has already deen inflated
+			// Check if the view has already been inflated
 			View v = view;
 			if(v == null)
 				v = mInflater.inflate(R.id.schedule_row, null);
@@ -277,6 +277,9 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	        return view;
 		}
     	
-    	
+		// For separator to use
+    	public void setCurrentPosition(int pos) {
+    		cur_pos = pos;
+    	}
     }
 }

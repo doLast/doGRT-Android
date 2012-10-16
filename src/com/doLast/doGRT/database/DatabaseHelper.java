@@ -138,6 +138,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void openDataBase() throws SQLException {
     	// Open the database
         String myPath = DB_PATH + DB_NAME;
-    	myDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
+        // The NO_LOCALIZED_COLLATORS flag prevent the android_metadata table error
+    	myDataBase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.NO_LOCALIZED_COLLATORS|SQLiteDatabase.OPEN_READONLY);
     }
 }
