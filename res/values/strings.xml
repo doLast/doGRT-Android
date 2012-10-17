@@ -6,6 +6,7 @@
     <string name="title_activity_main">doGRT</string>
     <string name="title_activity_main1">MainActivity</string>
     <string name="text">Text</string>
+    <string name="main_action_bar_subtitle">"Long press to edit stop"</string>
     
     <string name="enable_gps">Enable GPS?</string>
     <string name="no">No</string>
@@ -24,5 +25,7 @@
     <string name="no_route">No Available Route</string>
     <string name="left_buses">Left Buses</string>
     <string name="coming_buses">Coming Buses</string>
+    <string name="add_instruction">Press "+" to add a stop</string>
+    <string name="schedule_valid_date">Schedule valid until Dec 23, 2012</string>
 
 </resources>

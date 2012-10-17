@@ -50,6 +50,9 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	// List view of the activity
 	private ListView list_view = null;
 	
+	// Left buses display offset
+	private final int LEFT_BUSES_OFFSET = 2; 
+	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);   
@@ -73,6 +76,10 @@ public class RoutesActivity extends SherlockFragmentActivity {
         
         // Set content view and find list view
         setContentView(R.layout.schedule);
+        list_view = (ListView)findViewById(R.id.schedule_list_view);
+        // Set up empty view
+    	TextView empty_view = (TextView)findViewById(R.id.schedule_empty_view);
+        list_view.setEmptyView(empty_view); 
         
         // Retrieve extra data
         Bundle extras = intent.getExtras();
@@ -94,13 +101,10 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	        Cursor user = managedQuery(UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
 	        if (user.getCount() > 0) {
 	        	menu.removeItem(R.id.add_option);
-	        } else {
-	        	menu.removeItem(R.id.delete);
 	        }
 			//user.close();
 		}
-		// TODO Auto-generated method stub
-		return super.onPrepareOptionsMenu(menu);
+		return true;
 	}
 
 	@Override
@@ -119,7 +123,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
 			// Switch to main activity
 			// Pack the stop id and name with the intent
 			main_intent.putExtra(MainActivity.ADD_STOP, stop_id);
-			main_intent.putExtra(MainActivity.ADD_STOP_NAME, stop_name);        
+			main_intent.putExtra(MainActivity.ADD_STOP_NAME, stop_name); 
         case android.R.id.home:
         	main_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         	startActivity(main_intent);
@@ -130,11 +134,6 @@ public class RoutesActivity extends SherlockFragmentActivity {
         	map_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         	startActivity(map_intent);            
         	return true;
-        case R.id.delete:
-            SherlockDialogFragment newFragment = MyDialogFragment.newInstance(MyDialogFragment.DELETE_DIALOG_ID, stop_id, stop_title);
-            newFragment.show(getSupportFragmentManager(), String.valueOf(MyDialogFragment.DELETE_DIALOG_ID));
-            invalidateOptionsMenu();
-            return true;
         }
  
         return super.onOptionsItemSelected(item);
@@ -189,7 +188,8 @@ public class RoutesActivity extends SherlockFragmentActivity {
         String[] projection = { StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.TRIP_ID + " as _id", 
         						StopTimesColumns.DEPART,
         						RoutesColumns.LONG_NAME,
-        						RoutesColumns.TABLE_NAME + "." + RoutesColumns.ROUTE_ID };
+        						RoutesColumns.TABLE_NAME + "." + RoutesColumns.ROUTE_ID,
+        						TripsColumns.TABLE_NAME + "." + TripsColumns.HEADSIGN };
         // Some complex selection for selecting from 3 tables
         String stop_time_id = StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.STOP_ID;
         String stop_time_trip_id = StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.TRIP_ID;
@@ -217,8 +217,6 @@ public class RoutesActivity extends SherlockFragmentActivity {
         
         // Iterate through cursor
         int cur_pos = 0;
-        //String section = LEFT_BUSES;
-        //SectionListItem[] schedule_array = new SectionListItem[stop_times.getCount()];
         stop_times.moveToFirst();
         for(int i = 0; i < stop_times.getCount(); i += 1) {        	
         	int depart = stop_times.getInt(1); // Get the departure time from cursor as and integer
@@ -226,27 +224,15 @@ public class RoutesActivity extends SherlockFragmentActivity {
         		cur_pos = i;
         		//section = COMING_BUSES;
         		break;
-        	}
-        	
-        	// Create the section item
-        	//schedule_array[i] = new SectionListItem(stop_times.getString(2), section);        	
+        	}	
         	stop_times.moveToNext();
-        }
-        
-        /*ScheduleAdapter array_adapter = new ScheduleAdapter(this, 
-        		R.id.route_name, schedule_array);        
-        // Try using the seciton adapter
-        SectionListAdapter section_adapter = new SectionListAdapter(getLayoutInflater(),
-                array_adapter);
-        list_view = (SectionListView)findViewById(R.id.schedule_list_view);
-        list_view.setAdapter(section_adapter);*/
+        }            
         
         // Assign adapter to ListView
         adapter = new ScheduleAdapter(this, R.layout.schedule, stop_times,
                 uiBindFrom, uiBindTo, cur_pos);
-        list_view = (ListView)findViewById(R.id.schedule_list_view);
         list_view.setAdapter(adapter);
-        if (cur_pos >= 2) cur_pos -= 2;
+        if (cur_pos >= LEFT_BUSES_OFFSET) cur_pos -= LEFT_BUSES_OFFSET;
         list_view.setSelection(cur_pos);        
     }
 }

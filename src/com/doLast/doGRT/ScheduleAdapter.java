@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.doLast.doGRT.database.DatabaseSchema.RoutesColumns;
 import com.doLast.doGRT.database.DatabaseSchema.StopTimesColumns;
+import com.doLast.doGRT.database.DatabaseSchema.TripsColumns;
 
 public class ScheduleAdapter extends SimpleCursorAdapter {
 	private Context mContext;
@@ -50,15 +51,15 @@ public class ScheduleAdapter extends SimpleCursorAdapter {
 		// Keep original route name
 		TextView route_view = (TextView)v.findViewById(R.id.route_name);
 		route_view.setText(cursor.getString(cursor.getColumnIndex(RoutesColumns.ROUTE_ID)) + " " +
-							cursor.getString(cursor.getColumnIndex(RoutesColumns.LONG_NAME)));	
+							cursor.getString(cursor.getColumnIndex(TripsColumns.HEADSIGN)));	
 		
 		// Separator
 		TextView separator = (TextView)v.findViewById(R.id.separator);
-		if (cursor.getPosition() == 0) {
-			separator.setText(R.string.left_buses);
-			separator.setVisibility(View.VISIBLE);
-		} else if (cursor.getPosition() == separator_pos) {
+		if (cursor.getPosition() == separator_pos) {
 			separator.setText(R.string.coming_buses);
+			separator.setVisibility(View.VISIBLE);
+		} else if (cursor.getPosition() == 0) {
+			separator.setText(R.string.left_buses);
 			separator.setVisibility(View.VISIBLE);
 		} else {
 			separator.setVisibility(View.GONE);

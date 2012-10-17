@@ -42,6 +42,7 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
+import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 import com.readystatesoftware.mapviewballoons.BalloonItemizedOverlay;
@@ -88,6 +89,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 				// Switch to route display
 	        	Intent routes_intent = new Intent(mContext, RoutesActivity.class);
 	        	// Pack stop id with the intent
+	        	routes_intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 	        	routes_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
 	        	routes_intent.putExtra(RoutesActivity.STOP_NAME, stop_name);
 	        	startActivity(routes_intent);
@@ -98,9 +100,13 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		@Override
 		public boolean onTouchEvent(MotionEvent event, MapView mapView) {
 			// TODO Auto-generated method stub
-			// Actively update the stops
-			dropPins(mapView.getMapCenter(), true);
-			return super.onTouchEvent(event, mapView);
+			switch(event.getAction()){
+			case MotionEvent.ACTION_UP:
+				// Actively update the stops
+				dropPins(mapView.getMapCenter(), true);
+			default:
+				return super.onTouchEvent(event, mapView);
+			}
 		}
 
 		public void addOverlay(OverlayItem overlay) {
@@ -129,8 +135,10 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     // Location manager
     private LocationManager location_manager = null;
     private String location_provider = null;
+    
     // Map controller
     private MapController map_controller = null;
+    
     // GPS
     private final String ASK_GPS = "ask_gps";
     private boolean ask_gps;
@@ -139,17 +147,23 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     private int stop_delta = 7000;
     private Location cur_location = null;
     private GeoPoint cur_location_point = null;
+    
     // Overlay items
     private List<Overlay> mapOverlays = null;
     private Drawable red_drawable = null;
     private Drawable green_drawable = null;
     private PinItemizedOverlay itemized_overlay = null;
-    private PinItemizedOverlay cur_overlay = null;
+    private MyLocationOverlay cur_overlay = null;
     private final String CURRENT_LOCATION = "Current Location";
     public static int BALLOON_PLACE_OFFSET = 30;
+    
     // Perference setting
     public static final String PREFS_NAME = "map_preference";
     private SharedPreferences settings = null;
+    
+    // Cursors
+    //private Cursor stop = null;
+    //private Cursor stops = null;    		
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -175,6 +189,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         }
         
         // Setting center to current location or University of Waterloo
+        cur_overlay = new MyLocationOverlay(this, mapView);
         map_controller = mapView.getController();
 	    // Move to current location, if one exist
 	    cur_location = location_manager.getLastKnownLocation(location_provider);
@@ -209,10 +224,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         green_drawable = this.getResources().getDrawable(R.drawable.green_marker);
         itemized_overlay = new PinItemizedOverlay(red_drawable, this);
         itemized_overlay.setBalloonBottomOffset(BALLOON_PLACE_OFFSET);        
-        cur_overlay = new PinItemizedOverlay(green_drawable, this);
-        cur_overlay.setBalloonBottomOffset(BALLOON_PLACE_OFFSET);
-        OverlayItem cur_overlay_item = new OverlayItem(cur_location_point, CURRENT_LOCATION, null);
-        cur_overlay.addOverlay(cur_overlay_item);
         
         // Restore preference
         settings = getSharedPreferences(PREFS_NAME, 0);
@@ -234,7 +245,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
             stop.moveToFirst();
             center = new GeoPoint((int)(stop.getDouble(0) * 1e6), (int)(stop.getDouble(1) * 1e6));
             map_controller.setCenter(center);
-            //stop.close();
         } else {          	
         	center = mapView.getMapCenter();
         }
@@ -251,6 +261,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		super.onPause();
 		/* Remove the locationlistener updates when Activity is paused */
 		location_manager.removeUpdates(this);
+		cur_overlay.disableMyLocation();
 	}
 
 	@Override
@@ -259,6 +270,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		super.onResume();
 		/* Request updates at startup */
 	    location_manager.requestLocationUpdates(location_provider, 400, 1, this);
+		cur_overlay.enableMyLocation();
 	}		
 
 	@Override
@@ -285,8 +297,8 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         switch (item.getItemId()) {        
         case R.id.current_location:
         	// Request current location
+        	if (cur_overlay.getMyLocation() != null) cur_location_point = cur_overlay.getMyLocation();
         	map_controller.animateTo(cur_location_point);
-        	// cur_overlay.onTap(cur_location_point, mapView);
         	dropPins(cur_location_point, false);
         	return true;
         case android.R.id.home:

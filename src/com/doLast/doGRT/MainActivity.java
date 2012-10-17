@@ -42,6 +42,7 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.TwoLineListItem;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentActivity;
@@ -57,6 +58,10 @@ public class MainActivity extends SherlockFragmentActivity {
 	// For action mode to update or delete
 	private String stop_id = null;
 	private String stop_title = null;
+	
+	// Cursors for query
+	//private Cursor user_stop = null;
+	//private Cursor user_stops = null;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -97,6 +102,7 @@ public class MainActivity extends SherlockFragmentActivity {
         setContentView(R.layout.activity_main);
         
         list_view = (ListView)findViewById(R.id.main_list_view);
+        
         // Register long press event
         list_view.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
@@ -118,7 +124,9 @@ public class MainActivity extends SherlockFragmentActivity {
         	    
         	    // Set the title
         	    action_mode.setTitle(stop_title);
-        	    // Make the view selected
+        	    
+        	    // Make the view selected (not working)
+        	    TwoLineListItem text_view = (TwoLineListItem)view;        	    
         	    view.setSelected(true);
 				return true;
 			}        	
@@ -129,35 +137,40 @@ public class MainActivity extends SherlockFragmentActivity {
 			public void onItemClick(AdapterView<?> l, View v, int position,
 					long id) {
 				// TODO Auto-generated method stub
-			    String[] projection = { UserBusStopsColumns.STOP_ID };
+			    String[] projection = { UserBusStopsColumns.STOP_ID, UserBusStopsColumns.TITLE };
 			    String selection = UserBusStopsColumns.USER_ID + " = " + id;
 			    Cursor user_stop = managedQuery(
 			        		UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
 			    // Should have exactly one entry
 			    if (user_stop.getCount() == 1) {
 			    	user_stop.moveToFirst();
-			        String stop_id = user_stop.getString(0);
+			        stop_id = user_stop.getString(0);
+			        stop_title = user_stop.getString(1);
+			    }
+			    
+			    // If action_mode is active, do not switch to schedule view
+				if (action_mode != null) {
+					action_mode.setTitle(stop_title);
+				} else {
 			        // Switch to routes display
 			        Intent route_intent = new Intent(MainActivity.this, RoutesActivity.class);
 			        route_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
-			        TextView view = (TextView)v;
-			        route_intent.putExtra(RoutesActivity.STOP_TITLE, view.getText());
+			        TwoLineListItem view = (TwoLineListItem)v;
+			        route_intent.putExtra(RoutesActivity.STOP_TITLE, view.getText1().getText());
 			        startActivity(route_intent);
-			    } else {
-			      	Log.e("Wrong id", "wrong id?");        	
-			    }
+				}
 				//super.onListItemClick(l, v, position, id);
 			}          	
         });
         
         // Remember to perform an alias of our own primary key to _id so the adapter knows what to do
         String[] projection = { UserBusStopsColumns.USER_ID + " as _id", UserBusStopsColumns.STOP_ID, UserBusStopsColumns.TITLE };
-        String[] uiBindFrom = { UserBusStopsColumns.TITLE };
-        int[] uiBindTo = { android.R.id.text1 };
+        String[] uiBindFrom = { UserBusStopsColumns.TITLE, UserBusStopsColumns.STOP_ID };
+        int[] uiBindTo = { android.R.id.text1, android.R.id.text2 };
         Cursor user_stops = managedQuery(
         		UserBusStopsColumns.CONTENT_URI, projection, null, null, null);
         Log.d("Query result", "Count:" + user_stops.getCount());
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, user_stops,
+        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, user_stops,
                 uiBindFrom, uiBindTo);
 
         // Assign adapter to ListView
@@ -210,7 +223,7 @@ public class MainActivity extends SherlockFragmentActivity {
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         // Subtitle of the action bar
-        getSupportActionBar().setSubtitle("Long press to start selection");
+        getSupportActionBar().setSubtitle(R.string.main_action_bar_subtitle);
     }
 
 	@TargetApi(11)
@@ -269,5 +282,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			// TODO Auto-generated method stub
 			action_mode = null;			
 		}
+		
+		
     }
 }
