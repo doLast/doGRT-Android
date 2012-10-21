@@ -30,6 +30,7 @@
             android:name=".MainActivity"
             android:label="@string/title_activity_main" 
             android:id = "@+id/home"
+            android:configChanges="orientation|screenSize"
             android:uiOptions="splitActionBarWhenNarrow">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,7 +46,8 @@
 
 		<activity
 		    android:name=".RoutesActivity"
-		    android:uiOptions="splitActionBarWhenNarrow">		    
+		    android:uiOptions="splitActionBarWhenNarrow"
+		    android:configChanges="orientation|screenSize">		    
 		</activity>
         
     </application>

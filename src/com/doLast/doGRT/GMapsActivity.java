@@ -90,8 +90,10 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	        	Intent routes_intent = new Intent(mContext, RoutesActivity.class);
 	        	// Pack stop id with the intent
 	        	routes_intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-	        	routes_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
+	        	routes_intent.putExtra(RoutesActivity.SCHEDULE_TYPE, RoutesActivity.SCHEDULE_MIXED);
+	        	routes_intent.putExtra(RoutesActivity.STOP_ID, stop_id);
 	        	routes_intent.putExtra(RoutesActivity.STOP_NAME, stop_name);
+	        	routes_intent.putExtra(RoutesActivity.STOP_TITLE, stop_name);
 	        	startActivity(routes_intent);
 			}			
 			return super.onBalloonTap(index, item);
@@ -198,8 +200,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 					  							(int)(cur_location.getLongitude() * 1e6));
 		    map_controller.setCenter(cur_location_point);
 	    } else {
-	    	cur_location.setLatitude(waterloo.getLatitudeE6() / 1e6);
-	    	cur_location.setLongitude(waterloo.getLongitudeE6() / 1e6);
 	    	cur_location_point = new GeoPoint(waterloo.getLatitudeE6(), waterloo.getLongitudeE6());
 	    	map_controller.setCenter(waterloo);
 	    }

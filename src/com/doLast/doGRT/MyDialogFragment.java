@@ -53,7 +53,7 @@ public class MyDialogFragment extends SherlockDialogFragment {
         	input.setText(stop_title);
         	builder.setTitle(R.string.edit_dialog_title)
         		.setView(input)
-				.setNegativeButton(R.string.ok, new DialogInterface.OnClickListener() {
+				.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						ContentValues values = new ContentValues();
@@ -62,7 +62,7 @@ public class MyDialogFragment extends SherlockDialogFragment {
 								values, UserBusStopsColumns.STOP_ID + " = " + stop_id, null);
 					}
 				})
-				.setPositiveButton(R.string.cancel, new DialogInterface.OnClickListener() {
+				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						// Do nothing
@@ -73,14 +73,18 @@ public class MyDialogFragment extends SherlockDialogFragment {
         case DELETE_DIALOG_ID:
         	builder.setTitle(R.string.delete_dialog_title)
         	.setMessage("Delete " + stop_title + "?")
-			.setNegativeButton(R.string.ok, new DialogInterface.OnClickListener() {
+			.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 	        	    getActivity().getContentResolver().delete(UserBusStopsColumns.CONTENT_URI, 
 	        	            UserBusStopsColumns.STOP_ID + " = " + stop_id, null);
+	        	    
+	        	    // Only for route activity to update its option menu
+	        	    // Kinda weird but it works...
+	        	    if (getActivity().getClass().getSimpleName() == "RoutesActivity") ((RoutesActivity)(getActivity())).updateOptionMenu();
 				}
 			})
-			.setPositiveButton(R.string.cancel, new DialogInterface.OnClickListener() {
+			.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					// Do nothing

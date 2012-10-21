@@ -20,6 +20,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -52,16 +53,19 @@ public class MainActivity extends SherlockFragmentActivity {
 	public static final String ADD_STOP = "add_stop";
 	public static final String ADD_STOP_NAME = "add_stop_name";
 	
+	// For CAB
 	private com.actionbarsherlock.view.ActionMode action_mode = null;
+	private UserCallback callback = null;
+	
+	// List view
 	private ListView list_view = null;
 	
 	// For action mode to update or delete
 	private String stop_id = null;
 	private String stop_title = null;
 	
-	// Cursors for query
-	//private Cursor user_stop = null;
-	//private Cursor user_stops = null;
+	// Option menu
+	private Menu option_menu = null;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,8 +95,15 @@ public class MainActivity extends SherlockFragmentActivity {
         	values.put(UserBusStopsColumns.STOP_ID, stop_id);
         	values.put(UserBusStopsColumns.TITLE, stop_name);
         	
-        	// Add the stop id to database with stop name as default title
-        	Uri new_stop = getContentResolver().insert(UserBusStopsColumns.CONTENT_URI, values);
+    	    String[] projection = { UserBusStopsColumns.STOP_ID };
+    	    String selection = UserBusStopsColumns.STOP_ID+ " = " + stop_id;
+    	    Cursor user_stop = managedQuery(
+    	        		UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
+    	    // Check if the stop id already exists
+    	    if (user_stop.getCount() == 0) {
+	        	// Add the stop id to database with stop name as default title
+	        	Uri new_stop = getContentResolver().insert(UserBusStopsColumns.CONTENT_URI, values);
+    	    }
         	
         	// Remove the extras
         	getIntent().removeExtra(ADD_STOP);
@@ -102,7 +113,71 @@ public class MainActivity extends SherlockFragmentActivity {
         setContentView(R.layout.activity_main);
         
         list_view = (ListView)findViewById(R.id.main_list_view);
-        
+        list_view.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+                
+        // Setup list view
+        setupListView();
+               
+        // Forcing the overflow menu (3 dots menu)
+        try {
+            ViewConfiguration config = ViewConfiguration.get(this);
+            java.lang.reflect.Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+            if(menuKeyField != null) {
+                menuKeyField.setAccessible(true);
+                menuKeyField.setBoolean(config, false);
+            }
+        } catch (Exception ex) {
+            // Ignore
+        }
+    }
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Recreate the menu
+		menu.clear();
+		// TODO Auto-generated method stub
+		new MenuInflater(this).inflate(R.menu.main_option_menu, menu);
+		option_menu = menu;
+		
+		return super.onCreateOptionsMenu(menu);
+	}	
+	
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.add_option:
+        	// Go to GMapsActivity
+        	Intent gmap_intent = new Intent(this, GMapsActivity.class);
+        	startActivity(gmap_intent);
+            return true;
+        case R.id.about_option:
+            Toast.makeText(this, "doGRT Beta in process...", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+ 
+        return super.onOptionsItemSelected(item);
+    }    
+	
+    @Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		// TODO Auto-generated method stub
+    	onCreateOptionsMenu(option_menu);
+		super.onConfigurationChanged(newConfig);
+	}
+
+	@Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Subtitle of the action bar
+        getSupportActionBar().setSubtitle(R.string.main_action_bar_subtitle);
+    }
+
+	private void showFragmentDialog(int dialog_id) {
+        SherlockDialogFragment newFragment = MyDialogFragment.newInstance(dialog_id, stop_id, stop_title);
+        newFragment.show(getSupportFragmentManager(), String.valueOf(dialog_id));
+    }
+	
+	private void setupListView() {
         // Register long press event
         list_view.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
@@ -110,7 +185,9 @@ public class MainActivity extends SherlockFragmentActivity {
 			public boolean onItemLongClick(AdapterView arg0, View view,
 					int position, long id) {
 				// TODO Auto-generated method stub
-        	    if (action_mode == null) action_mode = startActionMode(new UserCallback());
+				callback = new UserCallback();
+				callback.setListView(list_view);
+        	    if (action_mode == null) action_mode = startActionMode(callback);
         	    action_mode.invalidate();
         	    // Find the title of the item clicked
         	    String[] projection = { UserBusStopsColumns.TITLE, UserBusStopsColumns.STOP_ID };
@@ -125,9 +202,10 @@ public class MainActivity extends SherlockFragmentActivity {
         	    // Set the title
         	    action_mode.setTitle(stop_title);
         	    
-        	    // Make the view selected (not working)
-        	    TwoLineListItem text_view = (TwoLineListItem)view;        	    
-        	    view.setSelected(true);
+        	    // Make the view selected
+        	    list_view.setItemChecked(position, true);
+				// Remind the callback the last selected position
+        	    callback.setLastPosition(position);
 				return true;
 			}        	
 		});
@@ -154,11 +232,13 @@ public class MainActivity extends SherlockFragmentActivity {
 				} else {
 			        // Switch to routes display
 			        Intent route_intent = new Intent(MainActivity.this, RoutesActivity.class);
-			        route_intent.putExtra(RoutesActivity.MIXED_SCHEDULE, stop_id);
-			        TwoLineListItem view = (TwoLineListItem)v;
-			        route_intent.putExtra(RoutesActivity.STOP_TITLE, view.getText1().getText());
+			        route_intent.putExtra(RoutesActivity.STOP_ID, stop_id);
+			        route_intent.putExtra(RoutesActivity.STOP_TITLE, stop_title);
 			        startActivity(route_intent);
 				}
+				
+				// Remind the callback the last selected position
+        	    if (callback != null ) callback.setLastPosition(position);
 				//super.onListItemClick(l, v, position, id);
 			}          	
         });
@@ -170,73 +250,44 @@ public class MainActivity extends SherlockFragmentActivity {
         Cursor user_stops = managedQuery(
         		UserBusStopsColumns.CONTENT_URI, projection, null, null, null);
         Log.d("Query result", "Count:" + user_stops.getCount());
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, android.R.layout.simple_list_item_2, user_stops,
+        SimpleCursorAdapter adapter = new UserAdapter(this, android.R.layout.simple_list_item_single_choice, user_stops,
                 uiBindFrom, uiBindTo);
 
         // Assign adapter to ListView
         list_view.setAdapter(adapter);
-               
-        // Forcing the overflow menu (3 dots menu)
-        try {
-            ViewConfiguration config = ViewConfiguration.get(this);
-            java.lang.reflect.Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
-            if(menuKeyField != null) {
-                menuKeyField.setAccessible(true);
-                menuKeyField.setBoolean(config, false);
-            }
-        } catch (Exception ex) {
-            // Ignore
-        }
-    }
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// TODO Auto-generated method stub
-		new MenuInflater(this).inflate(R.menu.main_option_menu, menu);
+	}
+	
+	private class UserAdapter extends SimpleCursorAdapter {
+		private Context mContext;
+		private int mLayout;
+		private LayoutInflater mInflater;
 		
-		return super.onCreateOptionsMenu(menu);
-	}	
-	
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case R.id.add_option:
-        	// Go to GMapsActivity
-        	Intent gmap_intent = new Intent(this, GMapsActivity.class);
-        	startActivity(gmap_intent);
-            return true;
-        case R.id.about_option:
-            Toast.makeText(this, "doGRT Beta in process...", Toast.LENGTH_SHORT).show();
-            return true;
-        }
- 
-        return super.onOptionsItemSelected(item);
-    }
+		public UserAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
+	        super(context, layout, c, from, to);
+	        mContext = context;
+	        mLayout = layout;
+	        mInflater = LayoutInflater.from(mContext);
+		}
 
-/*	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {	
-		// TODO Auto-generated method stub					
-
-	}*/    
-	
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        // Subtitle of the action bar
-        getSupportActionBar().setSubtitle(R.string.main_action_bar_subtitle);
-    }
-
-	@TargetApi(11)
-	private void showFragmentDialog(int dialog_id) {
-        SherlockDialogFragment newFragment = MyDialogFragment.newInstance(dialog_id, stop_id, stop_title);
-        newFragment.show(getSupportFragmentManager(), String.valueOf(dialog_id));
-    }
+		@Override
+		public void bindView(View view, Context context, Cursor cursor) {
+			// TODO Auto-generated method stub
+			CheckedTextView check_view = (CheckedTextView)view;
+			String title = cursor.getString(cursor.getColumnIndex(UserBusStopsColumns.TITLE));
+			String stop_id = cursor.getString(cursor.getColumnIndex(UserBusStopsColumns.STOP_ID));
+			
+			// Sneaky way to display different style in one view
+			check_view.setText(Html.fromHtml(title + "<br>" + 
+											"<font color=\"grey\"><small>" + stop_id + "</small></color>"));
+		}				
+	}
     
 	/** 
      * The CAB of edit option 
-     * NOTE: This is only available in API 11. Need to modify
      */
     private class UserCallback implements com.actionbarsherlock.view.ActionMode.Callback {
+    	private ListView list_view = null;
+    	private int last_position = 0;
 
 		@Override
 		public boolean onCreateActionMode(
@@ -280,9 +331,12 @@ public class MainActivity extends SherlockFragmentActivity {
 		public void onDestroyActionMode(
 				com.actionbarsherlock.view.ActionMode mode) {
 			// TODO Auto-generated method stub
+			list_view.setItemChecked(last_position, false);
 			action_mode = null;			
-		}
+		}				
 		
+		public void setListView(ListView v) { list_view = v; }
 		
+		public void setLastPosition(int pos) { last_position = pos; }
     }
 }

@@ -4,7 +4,7 @@
     		android:title="Edit"
     		android:icon="@drawable/document"
     		android:showAsAction="ifRoom|withText"/>
-        <item android:id="@+id/delete_option"
+    <item android:id="@+id/delete_option"
     		android:title="Delete"
     		android:icon="@drawable/trash"
     		android:showAsAction="ifRoom|withText"/>

@@ -67,8 +67,8 @@ public class ScheduleAdapter extends SimpleCursorAdapter {
 		
 		// Change the text colour if the buses passed
 		if (cursor.getPosition() < separator_pos) {
-			time_view.setTextColor(mContext.getResources().getColor(R.color.Gray));
-			route_view.setTextColor(mContext.getResources().getColor(R.color.Gray));
+			time_view.setTextColor(mContext.getResources().getColor(R.color.Grey));
+			route_view.setTextColor(mContext.getResources().getColor(R.color.Grey));
 
 		} else {
 			time_view.setTextColor(mContext.getResources().getColor(R.color.Black));

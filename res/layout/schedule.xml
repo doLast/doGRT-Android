@@ -1,13 +1,13 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <ListView
+   <!--<ListView
         android:id="@+id/schedule_list_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" >
-    </ListView>
+    </ListView>-->
 
     <TextView
         android:id="@+id/schedule_empty_view"
@@ -20,6 +20,6 @@
         android:singleLine="true"
         android:text="@string/no_route"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/Gray" />
+        android:textColor="@color/Grey" />
 
 </LinearLayout>

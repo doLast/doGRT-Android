@@ -23,6 +23,6 @@
         android:singleLine="true"
         android:text="@string/add_instruction"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/Gray" />
+        android:textColor="@color/Grey" />
 
 </LinearLayout>

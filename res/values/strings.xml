@@ -27,5 +27,8 @@
     <string name="coming_buses">Coming Buses</string>
     <string name="add_instruction">Press "+" to add a stop</string>
     <string name="schedule_valid_date">Schedule valid until Dec 23, 2012</string>
+    
+    <string name="mixed_schedule">Mixed Schedule</string>
+    <string name="route_select">Route Schedule</string>
 
 </resources>
