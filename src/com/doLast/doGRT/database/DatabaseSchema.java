@@ -58,7 +58,13 @@ public final class DatabaseSchema {
          * Title 
          * Type: TEXT
          */
-        public static final String TITLE = "title";              
+        public static final String TITLE = "title";             
+        
+        /**
+         * Stop name: The original name of the stop
+         * Type: TEXT
+         */
+        public static final String STOP_NAME = "stop_name";
 	}
 	
 	public static final class AgencyColumns implements BaseColumns {

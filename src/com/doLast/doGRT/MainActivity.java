@@ -40,6 +40,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	
 	// For action mode to update or delete
 	private String stop_id = null;
+	private String stop_name = null;
 	private String stop_title = null;
 	
 	// Option menu
@@ -66,17 +67,21 @@ public class MainActivity extends SherlockFragmentActivity {
         // Retrieve stop id
         Bundle extras = intent.getExtras();
         if (extras != null) {
-        	String stop_id = extras.getString(ADD_STOP);
-        	String stop_name = extras.getString(ADD_STOP_NAME);
-        	// Pack id and name into values
-        	ContentValues values = new ContentValues();
-        	values.put(UserBusStopsColumns.STOP_ID, stop_id);
-        	values.put(UserBusStopsColumns.TITLE, stop_name);
-        	
+        	stop_id = extras.getString(ADD_STOP);
+        	stop_name = extras.getString(ADD_STOP_NAME);
+        	stop_title = stop_name;
+         
     	    String[] projection = { UserBusStopsColumns.STOP_ID };
     	    String selection = UserBusStopsColumns.STOP_ID+ " = " + stop_id;
     	    Cursor user_stop = managedQuery(
     	        		UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
+    	    
+           	// Pack id and name into values
+        	ContentValues values = new ContentValues();
+        	values.put(UserBusStopsColumns.STOP_ID, stop_id);
+        	values.put(UserBusStopsColumns.STOP_NAME, stop_name);
+        	values.put(UserBusStopsColumns.TITLE, stop_title);
+        	
     	    // Check if the stop id already exists
     	    if (user_stop.getCount() == 0) {
 	        	// Add the stop id to database with stop name as default title
@@ -193,7 +198,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			public void onItemClick(AdapterView<?> l, View v, int position,
 					long id) {
 				// TODO Auto-generated method stub
-			    String[] projection = { UserBusStopsColumns.STOP_ID, UserBusStopsColumns.TITLE };
+			    String[] projection = { UserBusStopsColumns.STOP_ID, UserBusStopsColumns.TITLE, UserBusStopsColumns.STOP_NAME };
 			    String selection = UserBusStopsColumns.USER_ID + " = " + id;
 			    Cursor user_stop = managedQuery(
 			        		UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
@@ -202,6 +207,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			    	user_stop.moveToFirst();
 			        stop_id = user_stop.getString(0);
 			        stop_title = user_stop.getString(1);
+			        stop_name = user_stop.getString(2);
 			    }
 			    
 			    // If action_mode is active, do not switch to schedule view
@@ -211,6 +217,7 @@ public class MainActivity extends SherlockFragmentActivity {
 			        // Switch to routes display
 			        Intent route_intent = new Intent(MainActivity.this, RoutesActivity.class);
 			        route_intent.putExtra(RoutesActivity.STOP_ID, stop_id);
+			        route_intent.putExtra(RoutesActivity.STOP_NAME, stop_name);
 			        route_intent.putExtra(RoutesActivity.STOP_TITLE, stop_title);
 			        startActivity(route_intent);
 				}

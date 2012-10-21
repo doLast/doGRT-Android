@@ -11,12 +11,13 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     // The Database from user database
     private static String DB_PATH = "/data/data/com.doLast.doGRT/databases/"; 
     private static String DB_NAME = "USER.sqlite";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
     
     private final String CREATE_TABLE = "create table " + UserBusStopsColumns.TABLE_NAME +
     		" (" + UserBusStopsColumns.USER_ID + " integer primary key autoincrement, " +
     		UserBusStopsColumns.STOP_ID + " integer, " +
-    		UserBusStopsColumns.TITLE + " text not null);";
+    		UserBusStopsColumns.TITLE + " text not null, " +
+    		UserBusStopsColumns.STOP_NAME + " text not null);";
     
     public UserDatabaseHelper(Context context) {
 		super(context, DB_NAME, null, DB_VERSION);
