@@ -3,10 +3,8 @@ package com.doLast.doGRT;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,9 +16,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -31,15 +27,12 @@ import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockMapActivity;
-import com.actionbarsherlock.view.*;
-
+import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
-import com.doLast.doGRT.R;
+import com.actionbarsherlock.view.MenuItem;
 import com.doLast.doGRT.database.DatabaseSchema;
-import com.doLast.doGRT.database.DatabaseSchema.CalendarColumns;
 import com.doLast.doGRT.database.DatabaseSchema.StopsColumns;
 import com.google.android.maps.GeoPoint;
-import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
@@ -60,7 +53,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		
 		public PinItemizedOverlay(Drawable defaultMarker) {
 			super(boundCenterBottom(defaultMarker), mapView);
-			// TODO Auto-generated constructor stub
 		}
 		
 		public PinItemizedOverlay(Drawable defaultMarker, Context context) {
@@ -70,19 +62,16 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		
 		@Override
 		protected OverlayItem createItem(int i) {
-			// TODO Auto-generated method stub
 			return mOverlays.get(i);
 		}
 
 		@Override
 		public int size() {
-			// TODO Auto-generated method stub
 			return mOverlays.size();
 		}
 		
 		@Override
 		protected boolean onBalloonTap(int index, OverlayItem item) {
-			// TODO Auto-generated method stub
 			if (item.getTitle() != CURRENT_LOCATION) {
 				stop_id = item.getSnippet();
 				stop_name = item.getTitle();
@@ -101,7 +90,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		
 		@Override
 		public boolean onTouchEvent(MotionEvent event, MapView mapView) {
-			// TODO Auto-generated method stub
 			switch(event.getAction()){
 			case MotionEvent.ACTION_UP:
 				// Actively update the stops
@@ -169,7 +157,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_view);
         
@@ -257,7 +244,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         
     @Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
 		/* Remove the locationlistener updates when Activity is paused */
 		location_manager.removeUpdates(this);
@@ -266,7 +252,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
 		/* Request updates at startup */
 	    location_manager.requestLocationUpdates(location_provider, 400, 1, this);
@@ -275,7 +260,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 
 	@Override
 	protected void onStart() {
-		// TODO Auto-generated method stub
 		super.onStart();
 	}
 
@@ -286,7 +270,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// TODO Auto-generated method stub
 		new MenuInflater(this).inflate(R.menu.map_option_menu, menu);
 		
 		return super.onCreateOptionsMenu(menu);
@@ -314,7 +297,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
-		// TODO Auto-generated method stub
 	    Dialog dialog = null;
 	    switch(id) {
 	    case GPS_ALERT_DIALOG_ID:
@@ -328,7 +310,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 				@Override
 				public void onCheckedChanged(CompoundButton buttonView,
 						boolean isChecked) {
-					// TODO Auto-generated method stub
     				if (isChecked) {
     					SharedPreferences.Editor editor = settings.edit();
     					editor.putBoolean(ASK_GPS, false);
@@ -427,8 +408,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     
 	@Override
 	public void onLocationChanged(Location location) {
-		// TODO Auto-generated method stub
-
         // Drop pins if location changes
         //dropPins(mapView.getMapCenter()); 
         //mapView.postInvalidate();
@@ -436,20 +415,18 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 
 	@Override
 	public void onProviderDisabled(String provider) {
-		// TODO Auto-generated method stub
 		Toast.makeText(this, "Disabled provider " + provider,
 				Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	public void onProviderEnabled(String provider) {
-		// TODO Auto-generated method stub
 	    Toast.makeText(this, "Enabled new provider " + provider,
 	            Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
-		// TODO Auto-generated method stub
+		// Nothing to do here
 	}
 }

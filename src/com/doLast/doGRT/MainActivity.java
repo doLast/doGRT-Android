@@ -1,52 +1,30 @@
 package com.doLast.doGRT;
 
-import com.actionbarsherlock.app.*;
-import com.actionbarsherlock.view.*;
-import com.doLast.doGRT.database.*;
-import com.doLast.doGRT.database.DatabaseSchema.RoutesColumns;
-import com.doLast.doGRT.database.DatabaseSchema.StopTimesColumns;
-import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
-import com.doLast.doGRT.R;
-
-import android.net.Uri;
-import android.os.Bundle;
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
 import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
-import android.util.SparseBooleanArray;
-import android.view.ActionMode;
-import android.view.ActionMode.Callback;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.CheckBox;
 import android.widget.CheckedTextView;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.TwoLineListItem;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentActivity;
+
+import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
 
 public class MainActivity extends SherlockFragmentActivity {
 	// For adding a new stop from other activities
@@ -302,14 +280,12 @@ public class MainActivity extends SherlockFragmentActivity {
 		@Override
 		public boolean onPrepareActionMode(
 				com.actionbarsherlock.view.ActionMode mode, Menu menu) {
-			// TODO Auto-generated method stub
 			return false;
 		}
 
 		@Override
 		public boolean onActionItemClicked(
 				com.actionbarsherlock.view.ActionMode mode, MenuItem item) {
-			// TODO Auto-generated method stub
 			// Get the id of the item from the tag
 	        switch (item.getItemId()) {
             case R.id.edit_option:
@@ -330,7 +306,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		@Override
 		public void onDestroyActionMode(
 				com.actionbarsherlock.view.ActionMode mode) {
-			// TODO Auto-generated method stub
 			list_view.setItemChecked(last_position, false);
 			action_mode = null;			
 		}				

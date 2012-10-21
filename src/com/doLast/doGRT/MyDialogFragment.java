@@ -81,7 +81,7 @@ public class MyDialogFragment extends SherlockDialogFragment {
 	        	    
 	        	    // Only for route activity to update its option menu
 	        	    // Kinda weird but it works...
-	        	    if (getActivity().getClass().getSimpleName() == "RoutesActivity") ((RoutesActivity)(getActivity())).updateOptionMenu();
+	        	    if (getActivity().getClass().getName() == RoutesActivity.class.getName()) ((RoutesActivity)(getActivity())).updateOptionMenu();	        	    
 				}
 			})
 			.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

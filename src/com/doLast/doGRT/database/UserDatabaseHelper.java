@@ -24,13 +24,11 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		// TODO Auto-generated method stub
 		db.execSQL(CREATE_TABLE);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		// TODO Auto-generated method stub
 	    if (newVersion > oldVersion)
 	        Log.v("Database Upgrade", "Database version higher than old.");
 	    db.execSQL("DROP TABLE IF EXISTS " + UserBusStopsColumns.TABLE_NAME);

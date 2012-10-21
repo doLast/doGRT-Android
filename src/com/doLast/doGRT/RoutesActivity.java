@@ -1,46 +1,21 @@
 package com.doLast.doGRT;
-import java.util.Calendar;
-
-import com.doLast.doGRT.R;
-
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.app.SherlockListActivity;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.doLast.doGRT.database.DatabaseSchema;
-import com.doLast.doGRT.database.DatabaseSchema.CalendarColumns;
-import com.doLast.doGRT.database.DatabaseSchema.RoutesColumns;
 import com.doLast.doGRT.database.DatabaseSchema.StopTimesColumns;
-import com.doLast.doGRT.database.DatabaseSchema.StopsColumns;
-import com.doLast.doGRT.database.DatabaseSchema.TripsColumns;
 import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
-import com.readystatesoftware.mapviewballoons.R.id;
 
 public class RoutesActivity extends SherlockFragmentActivity {
 	// For choosing between different view from other activities
@@ -140,10 +115,8 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	        Cursor user = managedQuery(UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
 	        if (user.getCount() > 0) {
 	        	menu.removeItem(R.id.add_option);
-	        	menu.add(R.id.delete_option);
 	        } else {
 	        	menu.removeItem(R.id.delete_option);
-	        	menu.add(R.id.add_option);
 	        }
 			//user.close();
 		}
@@ -151,7 +124,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {	
+	public boolean onCreateOptionsMenu(Menu menu) {
 		// Always create a new menu
 		menu.clear();
 		new MenuInflater(this).inflate(R.menu.schedule_option_menu, menu);
@@ -190,14 +163,12 @@ public class RoutesActivity extends SherlockFragmentActivity {
     
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
-		// TODO Auto-generated method stub		
-		onCreateOptionsMenu(option_menu);
+		updateOptionMenu();
 		super.onConfigurationChanged(newConfig);
 	}
 
 	@Override
 	public void onBackPressed() {
-		// TODO Auto-generated method stub
 		int type = (Integer)getSupportActionBar().getSelectedTab().getTag();
 		if (!tab_listener.isSingleRouteDisplayed(type)) {
 			super.onBackPressed();
@@ -205,6 +176,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	}
 	
 	public void updateOptionMenu() {
+		onCreateOptionsMenu(option_menu);
 		onPrepareOptionsMenu(option_menu);
 	}
 
@@ -247,14 +219,13 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	
 		@Override
 		public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-			// TODO Auto-generated method stub
 			int type = (Integer)tab.getTag();	
 			ft.detach(ScheduleFragments[type]);
 		}
 	
 		@Override
 		public void onTabReselected(Tab tab, FragmentTransaction ft) {
-			// TODO Auto-generated method stub			
+			// Nothing to do here
 		}
 		
 		/**

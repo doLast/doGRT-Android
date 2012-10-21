@@ -1,21 +1,15 @@
 package com.doLast.doGRT.database;
 
-import java.io.IOException;
-
-import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
-
 import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.text.TextUtils;
+
+import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
 
 public class UserDatabaseProvider extends ContentProvider {
 	private UserDatabaseHelper mOpenHelper;
@@ -31,13 +25,11 @@ public class UserDatabaseProvider extends ContentProvider {
     
 	@Override
 	public String getType(Uri uri) {
-		// TODO Auto-generated method stub
 		return null;
 	}
     
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
-		// TODO Auto-generated method stub
 	    SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 	    int rows_deleted = 0;
 	    // Match Uri
@@ -68,7 +60,6 @@ public class UserDatabaseProvider extends ContentProvider {
 	@Override
 	public int update(Uri uri, ContentValues values, String selection,
 			String[] selectionArgs) {
-		// TODO Auto-generated method stub
 		// Very much similar to delete
 	    SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 	    int rows_updated = 0;
@@ -99,7 +90,6 @@ public class UserDatabaseProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
-		// TODO Auto-generated method stub
 	    SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 	    long id = 0;
 	    // Match Uri
@@ -116,7 +106,6 @@ public class UserDatabaseProvider extends ContentProvider {
 
 	@Override
 	public boolean onCreate() {
-		// TODO Auto-generated method stub
 		mOpenHelper = new UserDatabaseHelper(getContext());
 		return true;
 	}
@@ -124,7 +113,6 @@ public class UserDatabaseProvider extends ContentProvider {
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
-		// TODO Auto-generated method stub
 	    // Using SQLiteQueryBuilder instead of query() method
 	    SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 	    

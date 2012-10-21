@@ -37,7 +37,6 @@ public class ScheduleAdapter extends SimpleCursorAdapter {
 		TextView time_view = (TextView)v.findViewById(R.id.depart_time);
 		// Truncate the time into a readable format
 		String time = cursor.getString(cursor.getColumnIndex(StopTimesColumns.DEPART));
-		String second = time.substring(time.length() - 2, time.length());
 		String minute = time.substring(time.length() - 4, time.length() - 2);
 		String hour = time.substring(0, time.length() - 4);
 		// Check if hour is greater than 24, change it to 0
@@ -78,14 +77,12 @@ public class ScheduleAdapter extends SimpleCursorAdapter {
 
 	@Override
 	public View newView(Context context, Cursor cursor, ViewGroup parent) {
-		// TODO Auto-generated method stub
         final View view = mInflater.inflate(R.layout.schedule_row, parent, false); 
         return view;
 	}			
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		// TODO Auto-generated method stub
 		return super.getView(position, convertView, parent);
 	}
 }
