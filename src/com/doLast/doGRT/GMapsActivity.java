@@ -238,7 +238,11 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         
         // Drop pins
         dropPins(center, true);     
-        if (extras != null) itemized_overlay.onTap(center, mapView); // Tap the center stop if trying to locate        
+        if (extras != null) {
+        	map_controller.setZoom(21); // Zoom in first to get accurate stop position
+        	itemized_overlay.onTap(center, mapView); // Tap the center stop if trying to locate
+        	map_controller.setZoom(zoom_level); // Zoom back
+        }
         mapView.postInvalidate();
     }
         

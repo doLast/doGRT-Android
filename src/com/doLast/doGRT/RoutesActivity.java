@@ -146,7 +146,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
         	main_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         	startActivity(main_intent);
         	return true;
-        case R.id.route:
+        case R.id.locate:
         	Intent map_intent = new Intent(this, GMapsActivity.class);
         	map_intent.putExtra(GMapsActivity.LOCATE, stop_id);
         	map_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

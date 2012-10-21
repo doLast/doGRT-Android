@@ -9,7 +9,7 @@
    		android:title="Delete"
    		android:icon="@drawable/trash"
    		android:showAsAction="ifRoom|withText"/>
-  <item android:id="@+id/route"
+  <item android:id="@+id/locate"
     	android:title="Locate"
     	android:icon="@drawable/flag1"       
     	android:showAsAction="ifRoom|withText"/>
