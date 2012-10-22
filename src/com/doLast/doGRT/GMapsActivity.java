@@ -250,7 +250,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     @Override
 	protected void onPause() {
 		super.onPause();
-		/* Remove the locationlistener updates when Activity is paused */
+		/* Remove the location listener updates when Activity is paused */
 		location_manager.removeUpdates(this);
 		cur_overlay.disableMyLocation();
 	}
