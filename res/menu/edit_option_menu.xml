@@ -3,9 +3,9 @@
     <item android:id="@+id/edit_option"
     		android:title="Edit"
     		android:icon="@drawable/document"
-    		android:showAsAction="ifRoom|withText"/>
+    		android:showAsAction="always|withText"/>
     <item android:id="@+id/delete_option"
     		android:title="Delete"
     		android:icon="@drawable/trash"
-    		android:showAsAction="ifRoom|withText"/>
+    		android:showAsAction="always|withText"/>
 </menu>

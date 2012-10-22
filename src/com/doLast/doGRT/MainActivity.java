@@ -1,5 +1,7 @@
 package com.doLast.doGRT;
 
+import java.lang.reflect.Method;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +21,7 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
@@ -145,6 +148,7 @@ public class MainActivity extends SherlockFragmentActivity {
 	public void onConfigurationChanged(Configuration newConfig) {
 		// TODO Auto-generated method stub
     	onCreateOptionsMenu(option_menu);
+    	onPrepareOptionsMenu(option_menu);
 		super.onConfigurationChanged(newConfig);
 	}
 

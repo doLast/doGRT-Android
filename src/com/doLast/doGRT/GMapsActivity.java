@@ -17,6 +17,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -134,7 +135,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     private boolean ask_gps;
     private GeoPoint waterloo = new GeoPoint(43468798,-80539179); // University of Waterloo
     private int zoom_level = 17;
-    private int stop_delta = 7000;
     private Location cur_location = null;
     private GeoPoint cur_location_point = null;
     
@@ -235,7 +235,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         } else {          	
         	center = mapView.getMapCenter();
         }
-        
+                
         // Drop pins
         dropPins(center, true);     
         if (extras != null) {
@@ -243,6 +243,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         	itemized_overlay.onTap(center, mapView); // Tap the center stop if trying to locate
         	map_controller.setZoom(zoom_level); // Zoom back
         }
+        
         mapView.postInvalidate();
     }
         
@@ -351,17 +352,23 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
      */
     private void dropPins(GeoPoint center, boolean clearPins) {
     	// Update the delta value
-    	stop_delta = stop_delta + 1000 * ((int)(Math.pow(2, zoom_level - mapView.getZoomLevel())) - 1);
+    	int lat_span_half = mapView.getLatitudeSpan() / 2;
+    	int long_span_half = mapView.getLongitudeSpan() / 2;    	    
+    	
+    	// Only used when mapView is not intialized
+    	if (lat_span_half == 0) lat_span_half = 5373;
+    	if (long_span_half == 180000000) long_span_half = 5149;    	    
+    	
     	zoom_level = mapView.getZoomLevel();
     	
     	// Setup query projection and selection
         String[] projection = { DatabaseSchema.StopsColumns.STOP_ID + " as _id", DatabaseSchema.StopsColumns.STOP_NAME,
         		DatabaseSchema.StopsColumns.STOP_LAT, DatabaseSchema.StopsColumns.STOP_LON };
         String selection = new String(
-        		DatabaseSchema.StopsColumns.STOP_LAT + " >= " + ((center.getLatitudeE6() - stop_delta ) / 1E6) + " and " +
-        		DatabaseSchema.StopsColumns.STOP_LAT + " <= " + ((center.getLatitudeE6() + stop_delta ) / 1E6) + " and " +
-        		DatabaseSchema.StopsColumns.STOP_LON + " >= " + ((center.getLongitudeE6() - stop_delta ) / 1E6) + " and " +
-        		DatabaseSchema.StopsColumns.STOP_LON + " <= " + ((center.getLongitudeE6() + stop_delta ) / 1E6)
+        		DatabaseSchema.StopsColumns.STOP_LAT + " >= " + ((center.getLatitudeE6() - lat_span_half ) / 1E6) + " and " +
+        		DatabaseSchema.StopsColumns.STOP_LAT + " <= " + ((center.getLatitudeE6() + lat_span_half ) / 1E6) + " and " +
+        		DatabaseSchema.StopsColumns.STOP_LON + " >= " + ((center.getLongitudeE6() - long_span_half ) / 1E6) + " and " +
+        		DatabaseSchema.StopsColumns.STOP_LON + " <= " + ((center.getLongitudeE6() + long_span_half ) / 1E6)
         		);
         
         Cursor stops = managedQuery(
