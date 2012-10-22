@@ -80,11 +80,8 @@ public class ScheduleListFragment extends SherlockListFragment {
 			displaySchedule(stop_id, null);
 			break;
     	case RoutesActivity.SCHEDULE_SELECT:
-			if (isSingleRouteDisplayed()) {
-				displaySchedule(stop_id, route_id);
-			} else {
-				displayRoutes(stop_id);
-			}
+			displayRoutes(stop_id);
+		    single_route = false;
 			break;
     	default:
 		}
