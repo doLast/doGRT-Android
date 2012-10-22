@@ -80,7 +80,11 @@ public class ScheduleListFragment extends SherlockListFragment {
 			displaySchedule(stop_id, null);
 			break;
     	case RoutesActivity.SCHEDULE_SELECT:
-			displayRoutes(stop_id);
+			if (isSingleRouteDisplayed()) {
+				displaySchedule(stop_id, route_id);
+			} else {
+				displayRoutes(stop_id);
+			}
 			break;
     	default:
 		}
@@ -93,7 +97,7 @@ public class ScheduleListFragment extends SherlockListFragment {
     @Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		// TODO Auto-generated method stub
-    	if (display_type == RoutesActivity.SCHEDULE_SELECT) {
+    	if (!isSingleRouteDisplayed() && display_type == RoutesActivity.SCHEDULE_SELECT) {
     		TwoLineListItem text_view = (TwoLineListItem)v;
     		route_id = (String) text_view.getText2().getText();
     		displaySchedule(stop_id, route_id);
@@ -102,7 +106,7 @@ public class ScheduleListFragment extends SherlockListFragment {
 		super.onListItemClick(l, v, position, id);
 	}
 
-    public void backKeyPressed() {
+	public void backKeyPressed() {
     	single_route = false;
     	displayRoutes(stop_id);    	
     }

@@ -25,6 +25,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	public static final String SCHEDULE_TYPE = "schedule_type";
 	public static final int SCHEDULE_MIXED = 0;
 	public static final int SCHEDULE_SELECT = 1;
+	public static final int SCHEDULE_SINGLE = 2;
 	public static final int NUM_TABS = 2;
 			
 	// Stop id, name and title
