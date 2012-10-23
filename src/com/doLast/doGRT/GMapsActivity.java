@@ -45,6 +45,11 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	/**
 	 * Simple itemized overlay item class
 	 */	
+	
+	// Previous tapped stop
+	private GeoPoint tapped_stop;
+	private int tapped_index;
+	
 	public class PinItemizedOverlay extends BalloonItemizedOverlay {
 	   	Context mContext = null;
 	   	String stop_id = null;
@@ -87,8 +92,19 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	        	startActivity(routes_intent);
 			}			
 			return super.onBalloonTap(index, item);
-		}		
+		}						
 		
+		@Override
+		protected void onBalloonOpen(int index) {
+			// TODO Auto-generated method stub
+			super.onBalloonOpen(index);
+			
+			// Save the last tapped location
+			OverlayItem item = getFocus();
+			tapped_stop = item.getPoint();
+			tapped_index = index;
+		}
+
 		@Override
 		public boolean onTouchEvent(MotionEvent event, MapView mapView) {
 			switch(event.getAction()){
@@ -102,11 +118,14 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 
 		public void addOverlay(OverlayItem overlay) {
 		    mOverlays.add(overlay);
+		    if (overlay.getPoint() == tapped_stop) onTap(tapped_stop, mapView);
 		    populate();
 		}				
 		
 		// Clear all overlay items
 		public void clearOverlayItems() {
+			// Prevent tapping index out of bound
+			setLastFocusedIndex(-1);
 			mOverlays.clear();
 			populate();
 		}
@@ -326,14 +345,14 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 			builder.setView(layout)
 					.setTitle(R.string.enable_gps)					
 					.setMessage(R.string.enable_gps_dialog)					
-	        		.setNegativeButton(R.string.enable_gps, new DialogInterface.OnClickListener() {
+	        		.setPositiveButton(R.string.enable_gps, new DialogInterface.OnClickListener() {
 	        			@Override
 	        			public void onClick(DialogInterface dialog, int which) {
 
 	        				enableLocationSettings();              	
 	        			}
 	        		})
-	        		.setPositiveButton(R.string.no, new DialogInterface.OnClickListener() {
+	        		.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
 	        			@Override
 	        			public void onClick(DialogInterface dialog, int which) {
 	        				// Do nothing
@@ -375,8 +394,9 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         		DatabaseSchema.StopsColumns.CONTENT_URI, projection, selection, null, null);
         
         // Overlay items
-        if (clearPins) {
-            itemized_overlay.clearOverlayItems();
+        if (clearPins) {        	
+        	mapOverlays.clear();
+            itemized_overlay.clearOverlayItems();            
             if (stops.getCount() > 0) {
     	        stops.moveToFirst();        
     	        // Display all bus stops up to MAX_STOPS_IN_MAP stops
@@ -387,7 +407,6 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     	        	stops.moveToNext();
     	        }
             }
-        	mapOverlays.clear();
 	        mapOverlays.add(itemized_overlay);
             // Always add the current location to the map
         	mapOverlays.add(cur_overlay);

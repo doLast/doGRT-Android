@@ -3,6 +3,6 @@
   
   <item android:id="@+id/current_location"
     android:title="Current Location"
-    android:icon="@drawable/gray_marker"       
+    android:icon="@drawable/location"       
     android:showAsAction="ifRoom|withText"/>
 </menu>

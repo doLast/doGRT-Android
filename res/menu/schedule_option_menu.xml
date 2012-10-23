@@ -11,7 +11,7 @@
    		android:showAsAction="ifRoom|withText"/>
   <item android:id="@+id/locate"
     	android:title="Locate"
-    	android:icon="@drawable/flag1"       
+    	android:icon="@drawable/grey_marker"       
     	android:showAsAction="ifRoom|withText"/>
 
 </menu>

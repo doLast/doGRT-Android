@@ -49,6 +49,9 @@ public class MainActivity extends SherlockFragmentActivity {
 	// Option menu
 	private Menu option_menu = null;
 	
+	// Version information
+	private String version = "doGRT 1.0";
+	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);                
@@ -137,7 +140,7 @@ public class MainActivity extends SherlockFragmentActivity {
         	startActivity(gmap_intent);
             return true;
         case R.id.about_option:
-            Toast.makeText(this, "doGRT Beta in process...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, version, Toast.LENGTH_SHORT).show();
             return true;
         }
  
