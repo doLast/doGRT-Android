@@ -73,11 +73,13 @@ public class RoutesActivity extends SherlockFragmentActivity {
         action_bar.setTitle(stop_title);
         action_bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         
-        // Setup tab swipe(view pager)
+        // Setup tab swipe(view pager)                
+        
+        // Check orientation changes
         
         
-        // Setup the tabs
-        tab_listener = new TabListener<ScheduleListFragment>(this, "Tab Listener", ScheduleListFragment.class);
+	    // Setup the tabs
+	    tab_listener = new TabListener<ScheduleListFragment>(this, "Tab Listener", ScheduleListFragment.class);
         // Check if tabs are already created
         if (action_bar.getTabCount() == 0) {
         	// Mixed schedule tab
@@ -105,8 +107,8 @@ public class RoutesActivity extends SherlockFragmentActivity {
         } catch (Exception ex) {
             // Ignore
         }        
-    }	
-
+	}
+	
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
         // Check if stop_id already exist, do not display add button
@@ -211,7 +213,9 @@ public class RoutesActivity extends SherlockFragmentActivity {
 			if (ScheduleFragments[type] == null) {
 				// If not, create and add it
 				ScheduleFragments[type] = ScheduleListFragment.newInstance(type);
-				ft.add(android.R.id.content, ScheduleFragments[type], mTag);
+				// Notice here that we use replace instead of add since add would duplicate existing
+				// fragment causing overlay views
+				ft.replace(android.R.id.content, ScheduleFragments[type], mTag);
 			} else {
 				// or just simply attach it
 				ft.attach(ScheduleFragments[type]);

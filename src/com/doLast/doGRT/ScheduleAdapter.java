@@ -32,6 +32,7 @@ public class ScheduleAdapter extends SimpleCursorAdapter {
 		View v = view;
 		if(v == null)
 			v = mInflater.inflate(R.id.schedule_row, null);
+		v.setClickable(false);
 				
 		// TODO Auto-generated method stub
 		TextView time_view = (TextView)v.findViewById(R.id.depart_time);
@@ -45,7 +46,7 @@ public class ScheduleAdapter extends SimpleCursorAdapter {
 		// Add a prefix 0 to hour less than 10
 		if (Integer.valueOf(hour) < 10)
 			hour = "0" + hour;
-		time_view.setText(hour + ":" + minute);			
+		time_view.setText(hour + ":" + minute);
 
 		// Keep original route name
 		TextView route_view = (TextView)v.findViewById(R.id.route_name);
