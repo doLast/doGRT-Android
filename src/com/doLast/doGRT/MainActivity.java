@@ -143,13 +143,6 @@ public class MainActivity extends SherlockFragmentActivity {
 		super.onConfigurationChanged(newConfig);
 	}
 
-	@Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        // Subtitle of the action bar
-        getSupportActionBar().setSubtitle(R.string.main_action_bar_subtitle);
-    }
-
 	private void showFragmentDialog(int dialog_id) {
         SherlockDialogFragment newFragment = MyDialogFragment.newInstance(dialog_id, stop_id, stop_title);
         newFragment.show(getSupportFragmentManager(), String.valueOf(dialog_id));
@@ -272,7 +265,12 @@ public class MainActivity extends SherlockFragmentActivity {
 			super.notifyDataSetChanged();
 			
 			// Hide edit instruction
-	        if (cursor.getCount() == 0) ((TextView)findViewById(R.id.edit_instruction)).setVisibility(View.GONE);  
+			TextView edit_view = (TextView)findViewById(R.id.edit_instruction);
+	        if (cursor.getCount() == 0) {
+	        	edit_view.setVisibility(View.GONE);  
+	        } else {
+	        	edit_view.setVisibility(View.VISIBLE);
+	        }
 		}
 		
 		
