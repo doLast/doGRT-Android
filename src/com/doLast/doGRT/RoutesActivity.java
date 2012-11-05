@@ -1,10 +1,14 @@
 package com.doLast.doGRT;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.ViewConfiguration;
+import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.Tab;
@@ -75,9 +79,6 @@ public class RoutesActivity extends SherlockFragmentActivity {
         
         // Setup tab swipe(view pager)                
         
-        // Check orientation changes
-        
-        
 	    // Setup the tabs
 	    tab_listener = new TabListener<ScheduleListFragment>(this, "Tab Listener", ScheduleListFragment.class);
         // Check if tabs are already created
@@ -121,6 +122,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	        } else {
 	        	menu.removeItem(R.id.delete_option);
 	        }
+	        Log.v("Stop count", user.getCount() + "");
 			//user.close();
 		}
 		return true;
@@ -141,10 +143,26 @@ public class RoutesActivity extends SherlockFragmentActivity {
 		Intent main_intent = new Intent(this, MainActivity.class);
         switch (item.getItemId()) {
         case R.id.add_option:        	
-			// Switch to main activity
-			// Pack the stop id and name with the intent
-			main_intent.putExtra(MainActivity.ADD_STOP, stop_id);
-			main_intent.putExtra(MainActivity.ADD_STOP_NAME, stop_name); 
+        	// Add to favourite
+    	    String[] projection = { UserBusStopsColumns.STOP_ID };
+    	    String selection = UserBusStopsColumns.STOP_ID + " = " + stop_id;
+    	    Cursor user_stop = managedQuery(
+    	        		UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
+    	    
+           	// Pack id and name into values
+        	ContentValues values = new ContentValues();
+        	values.put(UserBusStopsColumns.STOP_ID, stop_id);
+        	values.put(UserBusStopsColumns.STOP_NAME, stop_name);
+        	values.put(UserBusStopsColumns.TITLE, stop_title);
+        	
+    	    // Check if the stop id already exists
+    	    if (user_stop.getCount() == 0) {
+	        	// Add the stop id to database with stop name as default title
+	        	Uri new_stop = getContentResolver().insert(UserBusStopsColumns.CONTENT_URI, values);
+    	    }
+    	    
+    	    Toast.makeText(this, "Stop added", Toast.LENGTH_SHORT).show();
+			break;
         case android.R.id.home:
         	main_intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         	startActivity(main_intent);
@@ -156,11 +174,15 @@ public class RoutesActivity extends SherlockFragmentActivity {
         	startActivity(map_intent);            
         	return true;
         case R.id.delete_option:
-            SherlockDialogFragment newFragment = MyDialogFragment.newInstance(MyDialogFragment.DELETE_DIALOG_ID, stop_id, stop_title);
-            newFragment.show(getSupportFragmentManager(), String.valueOf(MyDialogFragment.DELETE_DIALOG_ID));
-        	return true;
+    	    getContentResolver().delete(UserBusStopsColumns.CONTENT_URI, 
+    	            UserBusStopsColumns.STOP_ID + " = " + stop_id, null);
+    	    Toast.makeText(this, "Stop deleted", Toast.LENGTH_SHORT).show();
+        	break;
         }
- 
+        
+        // Update option menu
+        updateOptionMenu();
+        
         return super.onOptionsItemSelected(item);
     }        
     

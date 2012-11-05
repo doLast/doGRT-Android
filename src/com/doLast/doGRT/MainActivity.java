@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.drawable.NinePatchDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
@@ -19,6 +20,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -52,6 +54,9 @@ public class MainActivity extends SherlockFragmentActivity {
 	// Version information
 	private String version = "doGRT 1.0";
 	
+	// Number of user stops
+	private int num_user_stop = 0;
+	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);                
@@ -69,30 +74,12 @@ public class MainActivity extends SherlockFragmentActivity {
             intent.setData(UserBusStopsColumns.CONTENT_URI);
         }
         
-        // Check if the user has added a new stop
-        // Retrieve stop id
+        // Retrieve info
         Bundle extras = intent.getExtras();
         if (extras != null) {
         	stop_id = extras.getString(ADD_STOP);
         	stop_name = extras.getString(ADD_STOP_NAME);
         	stop_title = stop_name;
-         
-    	    String[] projection = { UserBusStopsColumns.STOP_ID };
-    	    String selection = UserBusStopsColumns.STOP_ID+ " = " + stop_id;
-    	    Cursor user_stop = managedQuery(
-    	        		UserBusStopsColumns.CONTENT_URI, projection, selection, null, null);
-    	    
-           	// Pack id and name into values
-        	ContentValues values = new ContentValues();
-        	values.put(UserBusStopsColumns.STOP_ID, stop_id);
-        	values.put(UserBusStopsColumns.STOP_NAME, stop_name);
-        	values.put(UserBusStopsColumns.TITLE, stop_title);
-        	
-    	    // Check if the stop id already exists
-    	    if (user_stop.getCount() == 0) {
-	        	// Add the stop id to database with stop name as default title
-	        	Uri new_stop = getContentResolver().insert(UserBusStopsColumns.CONTENT_URI, values);
-    	    }
         	
         	// Remove the extras
         	getIntent().removeExtra(ADD_STOP);
@@ -103,6 +90,7 @@ public class MainActivity extends SherlockFragmentActivity {
         
         list_view = (ListView)findViewById(R.id.main_list_view);
         list_view.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        list_view.setEmptyView((TextView)findViewById(android.R.id.empty));
                 
         // Setup list view
         setupListView();
@@ -118,7 +106,7 @@ public class MainActivity extends SherlockFragmentActivity {
         } catch (Exception ex) {
             // Ignore
         }
-    }
+	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -244,21 +232,26 @@ public class MainActivity extends SherlockFragmentActivity {
         Log.d("Query result", "Count:" + user_stops.getCount());
         SimpleCursorAdapter adapter = new UserAdapter(this, android.R.layout.simple_list_item_single_choice, user_stops,
                 uiBindFrom, uiBindTo);
+        
+        // Hide edit instruction when there are no user stops
+        if (user_stops.getCount() == 0) ((TextView)findViewById(R.id.edit_instruction)).setVisibility(View.GONE);        
 
         // Assign adapter to ListView
         list_view.setAdapter(adapter);
-	}
+	}		
 	
 	private class UserAdapter extends SimpleCursorAdapter {
 		private Context mContext;
 		private int mLayout;
 		private LayoutInflater mInflater;
+		private Cursor cursor;
 		
 		public UserAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
 	        super(context, layout, c, from, to);
 	        mContext = context;
 	        mLayout = layout;
 	        mInflater = LayoutInflater.from(mContext);
+	        cursor = c;
 		}
 
 		@Override
@@ -271,7 +264,18 @@ public class MainActivity extends SherlockFragmentActivity {
 			// Sneaky way to display different style in one view
 			check_view.setText(Html.fromHtml(title + "<br>" + 
 											"<font color=\"grey\"><small>" + stop_id + "</small></color>"));
-		}				
+		}
+
+		@Override
+		public void notifyDataSetChanged() {
+			// TODO Auto-generated method stub
+			super.notifyDataSetChanged();
+			
+			// Hide edit instruction
+	        if (cursor.getCount() == 0) ((TextView)findViewById(R.id.edit_instruction)).setVisibility(View.GONE);  
+		}
+		
+		
 	}
     
 	/** 

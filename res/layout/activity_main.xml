@@ -7,10 +7,16 @@
     <ListView 
         android:id="@+id/main_list_view"
         android:layout_width="fill_parent"
-    	android:layout_height="0dp"
-        android:layout_weight="0.65"
+    	android:layout_height="wrap_content"
         android:choiceMode="singleChoice"></ListView> 
-    	
+        
+    <TextView
+        android:id="@+id/seperator"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/Grey"
+        />
+    
     <TextView
         android:id="@android:id/empty"
         android:layout_width="wrap_content"
@@ -24,5 +30,19 @@
         android:text="@string/add_instruction"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/Grey" />
+    
+    <TextView
+        android:id="@+id/edit_instruction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="5dip"
+        android:layout_marginTop="5dip"
+        android:clickable="false"
+        android:gravity="center"        
+        android:singleLine="true"
+        android:text="@string/edit_instruction"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/Grey" />    	
 
 </LinearLayout>

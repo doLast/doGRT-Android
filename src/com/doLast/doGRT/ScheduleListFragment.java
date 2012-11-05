@@ -4,6 +4,7 @@ import java.util.Calendar;
 
 import android.app.Activity;
 import android.database.Cursor;
+import android.database.MergeCursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -38,6 +39,7 @@ public class ScheduleListFragment extends SherlockListFragment {
 	
 	// Today's service id
 	private String service_ids = null;	
+	private String yesterday_service_ids = null;
 	
 	// Left buses display offset
 	private final int LEFT_BUSES_OFFSET = 2;	
@@ -72,7 +74,8 @@ public class ScheduleListFragment extends SherlockListFragment {
 		stop_title = mActivity.getStopTitle();
 		
         // Determine service id
-    	service_ids = getServiecId();
+    	service_ids = getServiecId(true);
+    	yesterday_service_ids = getServiecId(false);
 		
     	// Display schedule
     	switch(display_type) {
@@ -108,11 +111,18 @@ public class ScheduleListFragment extends SherlockListFragment {
     	displayRoutes(stop_id);    	
     }
     
-    // Retrieve today's service ids
-	private String getServiecId() {
+    /** 
+     * Retrieve service ids
+     * @param today true - today's service id, false- yesterday's service id
+     */
+	private String getServiecId(boolean today) {
     	String service_ids = new String("");
     	String selection = new String("");
-        switch(Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
+    	Calendar calendar = Calendar.getInstance();
+    	// Yesterday
+    	if (!today) calendar.add(Calendar.DAY_OF_WEEK, -1);
+    	
+        switch(calendar.get(Calendar.DAY_OF_WEEK)) {
         case Calendar.SUNDAY:
         	selection = "sunday";
         	break;
@@ -176,8 +186,21 @@ public class ScheduleListFragment extends SherlockListFragment {
         	single_route = true;
         }
         String orderBy = StopTimesColumns.DEPART;
+        // Today's schedule
         Cursor stop_times = mActivity.managedQuery(
         		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);
+                
+        // Yesterday's schedule
+        // Modify selection
+        selection =  stop_time_id + " = " + stop_id + " AND " +
+				stop_time_trip_id + " = " + trip_trip_id + " AND " +
+				trip_route_id + " = " + route_route_id + " AND " +
+				"(" + yesterday_service_ids + ")" + " AND " +
+				StopTimesColumns.DEPART + " >= " + 240000;
+        Cursor yesterday_stop_times = mActivity.managedQuery(
+        		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);
+        
+        MergeCursor merge_stop_times = new MergeCursor(new Cursor[] { yesterday_stop_times, stop_times });
         
         String[] uiBindFrom = { StopTimesColumns.DEPART, RoutesColumns.ROUTE_ID, RoutesColumns.LONG_NAME };
         int[] uiBindTo = { R.id.depart_time, R.id.route_name };                 
@@ -197,12 +220,12 @@ public class ScheduleListFragment extends SherlockListFragment {
         		cur_pos = i;
         		//section = COMING_BUSES;
         		break;
-        	}	
+        	}
         	stop_times.moveToNext();
         }            
         
         // Assign adapter to ListView
-        adapter = new ScheduleAdapter(mActivity, R.layout.schedule, stop_times,
+        adapter = new ScheduleAdapter(mActivity, R.layout.schedule, merge_stop_times,
                 uiBindFrom, uiBindTo, cur_pos);
         setListAdapter(adapter);
         if (cur_pos >= LEFT_BUSES_OFFSET) cur_pos -= LEFT_BUSES_OFFSET;
