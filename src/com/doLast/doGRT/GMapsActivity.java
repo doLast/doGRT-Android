@@ -334,11 +334,13 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 				@Override
 				public void onCheckedChanged(CompoundButton buttonView,
 						boolean isChecked) {
+					SharedPreferences.Editor editor = settings.edit();
     				if (isChecked) {
-    					SharedPreferences.Editor editor = settings.edit();
     					editor.putBoolean(ASK_GPS, false);
-    					editor.commit();
+    				} else {
+    					editor.putBoolean(ASK_GPS, true);
     				}
+					editor.commit();
 				}			
 			});
 			
