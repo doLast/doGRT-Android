@@ -43,6 +43,9 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	// Option menu
 	private Menu option_menu = null;
 	
+	// Constants for save instance
+	private final String SELECTED_TAB = "selected_tab";
+	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);   
@@ -108,8 +111,21 @@ public class RoutesActivity extends SherlockFragmentActivity {
         } catch (Exception ex) {
             // Ignore
         }        
+        
+        // Restore previous tab selection
+        if (savedInstanceState != null) {
+            action_bar.setSelectedNavigationItem(savedInstanceState.getInt(SELECTED_TAB, 0));
+        }
 	}
 	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		
+		// Save previously selected tab
+		outState.putInt(SELECTED_TAB, getSupportActionBar().getSelectedNavigationIndex());
+	}
+
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
         // Check if stop_id already exist, do not display add button

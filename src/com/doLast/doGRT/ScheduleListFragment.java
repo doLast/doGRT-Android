@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.MergeCursor;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ import com.doLast.doGRT.database.DatabaseSchema.StopTimesColumns;
 import com.doLast.doGRT.database.DatabaseSchema.TripsColumns;
 
 public class ScheduleListFragment extends SherlockListFragment {
+	public static final String mTag = "ScheduleListFragment";
 	private RoutesActivity mActivity = null;
 	
 	// Cursor adapter
@@ -44,11 +46,16 @@ public class ScheduleListFragment extends SherlockListFragment {
 	// Left buses display offset
 	private final int LEFT_BUSES_OFFSET = 2;	
 	
-	// Display type
+	// Display type. Mixed schedule as default
 	private int display_type = RoutesActivity.SCHEDULE_MIXED;
 	
 	// To control back key when single route is displayed
 	private boolean single_route = false;
+	
+	// Constants for save instance
+	private final String LAST_POS = "last_pos"; // The position where user last viewed
+	private final String LAST_VIEW = "last_view"; // Whether user has selected a single route
+	private final String SAVE_ROUTE_ID = "save_route_id";
 	
     public static ScheduleListFragment newInstance(int type) {
     	ScheduleListFragment f = new ScheduleListFragment(type);
@@ -75,8 +82,8 @@ public class ScheduleListFragment extends SherlockListFragment {
 		
         // Determine service id
     	service_ids = getServiecId(true);
-    	yesterday_service_ids = getServiecId(false);
-		
+    	yesterday_service_ids = getServiecId(false);		
+    	
     	// Display schedule
     	switch(display_type) {
     	case RoutesActivity.SCHEDULE_MIXED:
@@ -91,10 +98,28 @@ public class ScheduleListFragment extends SherlockListFragment {
     	
     	ListView list_view = getListView();
     	TextView text_view = (TextView)mActivity.findViewById(R.id.schedule_empty_view);
-    	list_view.setEmptyView(text_view);
-	}
+    	list_view.setEmptyView(text_view);    
+    	
+    	// Restore position of list and last view
+    	if (savedInstanceState != null) {
+    		//setSelection(savedInstanceState.getInt(LAST_POS, 0));
+    		single_route = savedInstanceState.getBoolean(LAST_VIEW, false);
+    		route_id = savedInstanceState.getString(SAVE_ROUTE_ID);
+    		if (single_route) displaySchedule(stop_id, route_id);
+    	}
+	}		
 	
     @Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		
+		// Save instances
+		//outState.putInt(LAST_POS, getListView().getSelectedItemPosition());
+		outState.putBoolean(LAST_VIEW, single_route);
+		outState.putString(SAVE_ROUTE_ID, route_id);
+	}
+
+	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		// TODO Auto-generated method stub
     	if (!isSingleRouteDisplayed() && display_type == RoutesActivity.SCHEDULE_SELECT) {
