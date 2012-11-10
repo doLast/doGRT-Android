@@ -222,6 +222,9 @@ public class ScheduleListFragment extends SherlockListFragment {
         	stop_times.moveToNext();
         }            
         
+        // Includes yesterday's time into the offset to make the divider accurate
+        cur_pos += yesterday_stop_times.getCount();
+        
         // Assign adapter to ListView
         adapter = new ScheduleAdapter(mActivity, R.layout.schedule, merge_stop_times,
                 uiBindFrom, uiBindTo, cur_pos);
