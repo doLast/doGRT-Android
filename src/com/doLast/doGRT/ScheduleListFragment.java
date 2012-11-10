@@ -181,10 +181,7 @@ public class ScheduleListFragment extends SherlockListFragment {
         					stop_time_trip_id + " = " + trip_trip_id + " AND " +
         					trip_route_id + " = " + route_route_id + " AND " +
         					"(" + service_ids + ")";
-        if (route_id != null) {
-        	selection += " AND " + route_route_id + " = " + route_id;
-        	single_route = true;
-        }
+        selection = checkSingleRoutSelection(selection, route_id);
         String orderBy = StopTimesColumns.DEPART;
         // Today's schedule
         Cursor stop_times = mActivity.managedQuery(
@@ -197,6 +194,7 @@ public class ScheduleListFragment extends SherlockListFragment {
 				trip_route_id + " = " + route_route_id + " AND " +
 				"(" + yesterday_service_ids + ")" + " AND " +
 				StopTimesColumns.DEPART + " >= " + 240000;
+        selection = checkSingleRoutSelection(selection, route_id);      
         Cursor yesterday_stop_times = mActivity.managedQuery(
         		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);
         
@@ -260,7 +258,17 @@ public class ScheduleListFragment extends SherlockListFragment {
         setListAdapter(adapter);
     }    
     
+    // Check the selection statement for the query, return the updated selection
+    private String checkSingleRoutSelection(String selection, String route_id) {
+    	String ret_selection = selection;
+        if (route_id != null) {
+        	ret_selection += " AND " + RoutesColumns.TABLE_NAME + "." + RoutesColumns.ROUTE_ID + " = " + route_id;
+        	single_route = true;
+        }
+        return ret_selection;
+    }
+    
     public boolean isSingleRouteDisplayed() {
     	return single_route;
-    }
+    }        
 }
