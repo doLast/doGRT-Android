@@ -50,6 +50,9 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	private GeoPoint tapped_stop;
 	private int tapped_index;
 	
+	// For hiding balloons
+	private boolean moved = false;
+	
 	public class PinItemizedOverlay extends BalloonItemizedOverlay {
 	   	Context mContext = null;
 	   	String stop_id = null;
@@ -96,24 +99,31 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		
 		@Override
 		protected void onBalloonOpen(int index) {
-			// TODO Auto-generated method stub
 			super.onBalloonOpen(index);
 			
 			// Save the last tapped location
 			OverlayItem item = getFocus();
 			tapped_stop = item.getPoint();
-			tapped_index = index;
+			tapped_index = index;			
 		}
 
 		@Override
 		public boolean onTouchEvent(MotionEvent event, MapView mapView) {
 			switch(event.getAction()){
+			case MotionEvent.ACTION_MOVE:
+				moved = true;
+				break;
 			case MotionEvent.ACTION_UP:
+				// If it's a tap, close the balloon
+				if (!moved) hideAllBalloons();
 				// Actively update the stops
 				dropPins(mapView.getMapCenter(), true);
+				moved = false;
+				break;
 			default:
-				return super.onTouchEvent(event, mapView);
+				break;
 			}
+			return super.onTouchEvent(event, mapView);
 		}
 
 		public void addOverlay(OverlayItem overlay) {
@@ -229,7 +239,9 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         red_drawable = this.getResources().getDrawable(R.drawable.red_marker);
         green_drawable = this.getResources().getDrawable(R.drawable.green_marker);
         itemized_overlay = new PinItemizedOverlay(red_drawable, this);
-        itemized_overlay.setBalloonBottomOffset(BALLOON_PLACE_OFFSET);        
+        itemized_overlay.setBalloonBottomOffset(BALLOON_PLACE_OFFSET);
+        itemized_overlay.setShowClose(false);
+        itemized_overlay.setShowDisclosure(true);
         
         // Restore preference
         settings = getSharedPreferences(PREFS_NAME, 0);

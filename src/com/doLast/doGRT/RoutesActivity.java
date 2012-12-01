@@ -5,7 +5,10 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
@@ -39,6 +42,8 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	
 	// Tab listener
 	private TabListener<ScheduleListFragment> tab_listener = null;		
+	private ViewPager mViewPager;
+	private ActionBar mActionBar;
 	
 	// Option menu
 	private Menu option_menu = null;
@@ -63,8 +68,10 @@ public class RoutesActivity extends SherlockFragmentActivity {
             intent.setData(StopTimesColumns.CONTENT_URI);
         }
         
-        // Set content view and find list view
-        setContentView(R.layout.schedule);                
+        // Set content view and view pager
+        mViewPager = new ViewPager(this);
+        mViewPager.setId(R.layout.schedule);
+        setContentView(mViewPager);        
         
         // Retrieve extra data
         Bundle extras = intent.getExtras();
@@ -75,29 +82,21 @@ public class RoutesActivity extends SherlockFragmentActivity {
         }                
         
         // Use the "navigate up" button
-        ActionBar action_bar = getSupportActionBar();
-        action_bar.setDisplayHomeAsUpEnabled(true);
-        action_bar.setTitle(stop_title);
-        action_bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        mActionBar = getSupportActionBar();
+        mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar.setTitle(stop_title);
+        mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         
         // Setup tab swipe(view pager)                
         
 	    // Setup the tabs
-	    tab_listener = new TabListener<ScheduleListFragment>(this, "Tab Listener", ScheduleListFragment.class);
+	    tab_listener = new TabListener<ScheduleListFragment>(this, "Tab Listener", ScheduleListFragment.class, mViewPager, mActionBar);
         // Check if tabs are already created
-        if (action_bar.getTabCount() == 0) {
+        if (mActionBar.getTabCount() == 0) {
         	// Mixed schedule tab
-	        Tab tab = action_bar.newTab()
-	        		.setText(R.string.mixed_schedule)
-	        		.setTag(SCHEDULE_MIXED)
-	        		.setTabListener(tab_listener);
-	        action_bar.addTab(tab); 
+        	tab_listener.addTab(R.string.mixed_schedule, SCHEDULE_MIXED, tab_listener);
 	        // Route selection tab
-	        tab = action_bar.newTab()
-	        		.setText(R.string.route_select)
-	        		.setTag(SCHEDULE_SELECT)
-	        		.setTabListener(tab_listener);
-	        action_bar.addTab(tab);
+        	tab_listener.addTab(R.string.route_select, SCHEDULE_SELECT, tab_listener);
         }
         
         // Forcing the overflow menu (3 dots menu)
@@ -114,7 +113,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
         
         // Restore previous tab selection
         if (savedInstanceState != null) {
-            action_bar.setSelectedNavigationItem(savedInstanceState.getInt(SELECTED_TAB, 0));
+        	mActionBar.setSelectedNavigationItem(savedInstanceState.getInt(SELECTED_TAB, 0));
         }
 	}
 	
@@ -225,30 +224,46 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	public String getStopName() { return stop_name; }
 	public String getStopTitle() { return stop_title; }	
 
-    private class TabListener<T extends SherlockListFragment> implements ActionBar.TabListener {
+    private class TabListener<T extends SherlockListFragment> extends FragmentPagerAdapter 
+    	implements ActionBar.TabListener, ViewPager.OnPageChangeListener {
         private ScheduleListFragment ScheduleFragments[];
         private final SherlockFragmentActivity mActivity;
         private final String mTag;
         private final Class<T> mClass;
+        private final ViewPager mViewPager;
+        private final ActionBar mActionBar;
     	
         /** Constructor used each time a new tab is created.
          * @param activity  The host Activity, used to instantiate the fragment
          * @param tag  The identifier tag for the fragment
          * @param clz  The fragment's Class, used to instantiate the fragment
          */
-        public TabListener(SherlockFragmentActivity activity, String tag, Class<T> clz) {
+        public TabListener(SherlockFragmentActivity activity, String tag, Class<T> clz, ViewPager pager, ActionBar action_bar) {
+        	super(activity.getSupportFragmentManager());
         	mActivity = activity;
         	mTag = tag;
         	mClass = clz;
+        	mViewPager = pager;
+        	mViewPager.setAdapter(this);
+        	mViewPager.setOnPageChangeListener(this);
+        	mActionBar = action_bar;
         	ScheduleFragments = new ScheduleListFragment[NUM_TABS];
         }
     	
+        public void addTab(int text, int type, TabListener tab_listener) {
+	        Tab tab = mActionBar.newTab()
+	        		.setText(text)
+	        		.setTag(type)
+	        		.setTabListener(tab_listener);
+	        mActionBar.addTab(tab);
+	        ScheduleFragments[type] = ScheduleListFragment.newInstance(type);
+        }
+        
 		@Override
 		public void onTabSelected(Tab tab, FragmentTransaction ft) {
-			// TODO Auto-generated method stub
 			int type = (Integer)tab.getTag();
 			// Check if the fragment exist
-			if (ScheduleFragments[type] == null) {
+			/*if (ScheduleFragments[type] == null) {
 				// If not, create and add it
 				ScheduleFragments[type] = ScheduleListFragment.newInstance(type);
 				// Notice here that we use replace instead of add since add would duplicate existing
@@ -257,13 +272,14 @@ public class RoutesActivity extends SherlockFragmentActivity {
 			} else {
 				// or just simply attach it
 				ft.attach(ScheduleFragments[type]);
-			}			
+			}*/		
+			mViewPager.setCurrentItem(type);
 		}
 	
 		@Override
 		public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-			int type = (Integer)tab.getTag();	
-			ft.detach(ScheduleFragments[type]);
+			// int type = (Integer)tab.getTag();	
+			// ft.detach(ScheduleFragments[type]);
 		}
 	
 		@Override
@@ -277,10 +293,40 @@ public class RoutesActivity extends SherlockFragmentActivity {
 		 * 
 		 * */
 		private boolean isSingleRouteDisplayed(int type) {
-			boolean single_route = ScheduleFragments[type].isSingleRouteDisplayed();
-			if (single_route) ScheduleFragments[type].backKeyPressed();
+			boolean single_route = true;
+			if (ScheduleFragments[type] != null) {
+				single_route = ScheduleFragments[type].isSingleRouteDisplayed();
+				if (single_route) ScheduleFragments[type].backKeyPressed();
+			}
 			
 			return single_route;
+		}
+
+		@Override
+		public void onPageScrollStateChanged(int arg0) {
+			// Nothing to do here
+		}
+
+		@Override
+		public void onPageScrolled(int arg0, float arg1, int arg2) {
+			// Nothing to do here
+		}
+
+		@Override
+		public void onPageSelected(int type) {
+			mActionBar.setSelectedNavigationItem(type);
+		}
+
+		@Override
+		public Fragment getItem(int type) {
+			if (ScheduleFragments[type] == null) 
+				ScheduleFragments[type] = ScheduleListFragment.newInstance(type);
+			return ScheduleFragments[type];
+		}
+
+		@Override
+		public int getCount() {
+			return NUM_TABS;
 		}
     }	
 }
