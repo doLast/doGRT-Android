@@ -1,3 +1,6 @@
 [submodule "android-mapviewballoons"]
 	path = android-mapviewballoons
 	url = https://github.com/jgilfelt/android-mapviewballoons.git
+[submodule "ActionBarSherlock"]
+	path = ActionBarSherlock
+	url = git://github.com/JakeWharton/ActionBarSherlock.git
