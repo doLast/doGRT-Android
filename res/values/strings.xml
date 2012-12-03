@@ -6,6 +6,7 @@
     <string name="title_activity_main1">MainActivity</string>
     <string name="text">Text</string>
     <string name="main_action_bar_subtitle">"Long press to edit stop"</string>
+    <string name="search_hint">Search street name or stop id</string>
     
     <string name="enable_gps">Enable GPS?</string>
     <string name="no">No</string>

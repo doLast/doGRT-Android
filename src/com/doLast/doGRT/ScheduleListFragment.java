@@ -237,7 +237,8 @@ public class ScheduleListFragment extends SherlockListFragment {
         // Iterate through cursor
         int cur_pos = 0;
         stop_times.moveToFirst();
-        for(int i = 0; i < stop_times.getCount(); i += 1) {        	
+        int time_count = stop_times.getCount();
+        for(int i = 0; i < time_count; i += 1) {        	
         	int depart = stop_times.getInt(1); // Get the departure time from cursor as and integer
         	if ( depart > cur_time ) {
         		cur_pos = i;
@@ -254,7 +255,7 @@ public class ScheduleListFragment extends SherlockListFragment {
         adapter = new ScheduleAdapter(mActivity, R.layout.schedule, merge_stop_times,
                 uiBindFrom, uiBindTo, cur_pos);
         setListAdapter(adapter);
-        if (cur_pos >= LEFT_BUSES_OFFSET) cur_pos -= LEFT_BUSES_OFFSET;
+        if (cur_pos >= LEFT_BUSES_OFFSET && time_count - cur_pos >= LEFT_BUSES_OFFSET) cur_pos -= LEFT_BUSES_OFFSET;
         setSelection(cur_pos);           
     }
     

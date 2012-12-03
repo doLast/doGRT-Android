@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,6 +32,7 @@ import com.actionbarsherlock.app.SherlockMapActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.widget.SearchView;
 import com.doLast.doGRT.database.DatabaseSchema;
 import com.doLast.doGRT.database.DatabaseSchema.StopsColumns;
 import com.google.android.maps.GeoPoint;
@@ -191,7 +193,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         
         mapView = (MapView) findViewById(R.id.map_view);
         mapView.setBuiltInZoomControls(true);        
-        
+
         // Use the "navigate up" button
         ActionBar action_bar = getSupportActionBar();
         action_bar.setDisplayHomeAsUpEnabled(true);
@@ -319,6 +321,10 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         	if (cur_overlay.getMyLocation() != null) cur_location_point = cur_overlay.getMyLocation();
         	map_controller.animateTo(cur_location_point);
         	dropPins(cur_location_point, false);
+        	return true;
+        case R.id.search:
+        	Intent search_intent = new Intent(this, SearchableActivity.class);
+        	startActivity(search_intent); 
         	return true;
         case android.R.id.home:
         	// Go back to favourite list
