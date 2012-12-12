@@ -17,9 +17,11 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -90,8 +92,8 @@ public class MainActivity extends SherlockFragmentActivity {
         
         list_view = (ListView)findViewById(R.id.main_list_view);
         list_view.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        list_view.setEmptyView((TextView)findViewById(android.R.id.empty));
-                
+        list_view.setEmptyView((TextView)findViewById(android.R.id.empty));                     
+        
         // Setup list view
         setupListView();
                

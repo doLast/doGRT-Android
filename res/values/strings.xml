@@ -6,7 +6,7 @@
     <string name="title_activity_main1">MainActivity</string>
     <string name="text">Text</string>
     <string name="main_action_bar_subtitle">"Long press to edit stop"</string>
-    <string name="search_hint">Search street name or stop id</string>
+    <string name="search_hint">Search street names/stop id</string>
     
     <string name="enable_gps">Enable GPS?</string>
     <string name="no">No</string>
@@ -31,5 +31,16 @@
     
     <string name="mixed_schedule">Mixed Schedule</string>
     <string name="route_select">Route Schedule</string>
+    
+
+	<string-array name="days_array">
+		<item>Sunday</item>
+	   	<item>Monday</item>
+	    <item>Tuesday</item>
+	    <item>Wednesday</item>
+	    <item>Thursday</item>
+	    <item>Friday</item>
+	    <item>Saturday</item>
+    </string-array>
 
 </resources>

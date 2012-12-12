@@ -10,7 +10,12 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -84,10 +89,23 @@ public class RoutesActivity extends SherlockFragmentActivity {
         // Use the "navigate up" button
         mActionBar = getSupportActionBar();
         mActionBar.setDisplayHomeAsUpEnabled(true);
-        mActionBar.setTitle(stop_title);
+        //mActionBar.setTitle(stop_title);
         mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+
+        // Custom title view with a textview and days spinner
+        View custom_title_view = getLayoutInflater().inflate(R.layout.route_spinner, null, true);
+        mActionBar.setCustomView(custom_title_view);
+        mActionBar.setDisplayShowCustomEnabled(true);
+        mActionBar.setDisplayShowTitleEnabled(false);
         
-        // Setup tab swipe(view pager)                
+        // Setup spinner
+        String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+        Spinner spinner = (Spinner)custom_title_view.findViewById(R.id.days_spinner);
+        RouteSpinnerAdapter spinner_adapter = new RouteSpinnerAdapter(this,
+                R.layout.route_spinner_title, days, stop_title);
+        spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(spinner_adapter);
         
 	    // Setup the tabs
 	    tab_listener = new TabListener<ScheduleListFragment>(this, "Tab Listener", ScheduleListFragment.class, mViewPager, mActionBar);
