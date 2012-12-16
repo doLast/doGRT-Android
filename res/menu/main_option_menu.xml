@@ -3,10 +3,10 @@
   
   <item android:id="@+id/add_option"
     android:title="Add"
-    android:icon="@drawable/plus"       
+    android:icon="@drawable/content_new_32"       
     android:showAsAction="always|withText"/>
   <item android:id="@+id/about_option"
     android:title="About doLast"
-    android:icon="@drawable/info" 
+    android:icon="@drawable/action_about_32" 
     android:showAsAction="always|withText"/>
 </menu>

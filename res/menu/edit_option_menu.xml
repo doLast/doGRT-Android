@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">               
     <item android:id="@+id/edit_option"
     		android:title="Edit"
-    		android:icon="@drawable/document"
+    		android:icon="@drawable/content_edit_32"
     		android:showAsAction="always|withText"/>
     <item android:id="@+id/delete_option"
     		android:title="Delete"
-    		android:icon="@drawable/trash"
+    		android:icon="@drawable/content_discard_32"
     		android:showAsAction="always|withText"/>
 </menu>
