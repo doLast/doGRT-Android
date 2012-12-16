@@ -1,4 +1,4 @@
-package com.doLast.doGRT;
+package com.doLast.doGRT.map;
 
 import java.util.regex.Pattern;
 
@@ -19,7 +19,9 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.widget.SearchView;
+import com.doLast.doGRT.R;
 import com.doLast.doGRT.database.DatabaseSchema.StopsColumns;
+import com.doLast.doGRT.main.MainActivity;
 
 public class SearchableActivity extends SherlockListActivity {
 	@Override

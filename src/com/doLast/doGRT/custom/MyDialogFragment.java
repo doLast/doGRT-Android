@@ -1,4 +1,4 @@
-package com.doLast.doGRT;
+package com.doLast.doGRT.custom;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -9,7 +9,9 @@ import android.util.Log;
 import android.widget.EditText;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
+import com.doLast.doGRT.R;
 import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
+import com.doLast.doGRT.route.RoutesActivity;
 
 
 public class MyDialogFragment extends SherlockDialogFragment {
@@ -25,7 +27,7 @@ public class MyDialogFragment extends SherlockDialogFragment {
      * Create a new instance of MyDialogFragment, providing ids
      * as an argument.
      */
-    static MyDialogFragment newInstance(int dialog_id, String stop_id, String stop_title) {
+    public static MyDialogFragment newInstance(int dialog_id, String stop_id, String stop_title) {
         MyDialogFragment f = new MyDialogFragment();
 
         // Supply id of the dialog input as an argument.

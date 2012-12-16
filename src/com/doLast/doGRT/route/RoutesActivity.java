@@ -1,4 +1,4 @@
-package com.doLast.doGRT;
+package com.doLast.doGRT.route;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.ArrayAdapter;
@@ -26,8 +27,11 @@ import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.doLast.doGRT.R;
 import com.doLast.doGRT.database.DatabaseSchema.StopTimesColumns;
 import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
+import com.doLast.doGRT.main.MainActivity;
+import com.doLast.doGRT.map.GMapsActivity;
 
 public class RoutesActivity extends SherlockFragmentActivity {
 	// For choosing between different view from other activities
@@ -91,11 +95,9 @@ public class RoutesActivity extends SherlockFragmentActivity {
         mActionBar.setDisplayHomeAsUpEnabled(true);
         //mActionBar.setTitle(stop_title);
         mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
-
+        
         // Custom title view with a textview and days spinner
         View custom_title_view = getLayoutInflater().inflate(R.layout.route_spinner, null, true);
-        mActionBar.setCustomView(custom_title_view);
         mActionBar.setDisplayShowCustomEnabled(true);
         mActionBar.setDisplayShowTitleEnabled(false);
         
@@ -106,6 +108,9 @@ public class RoutesActivity extends SherlockFragmentActivity {
                 R.layout.route_spinner_title, days, stop_title);
         spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinner_adapter);
+                
+        // Set custom view
+        mActionBar.setCustomView(custom_title_view);
         
 	    // Setup the tabs
 	    tab_listener = new TabListener<ScheduleListFragment>(this, "Tab Listener", ScheduleListFragment.class, mViewPager, mActionBar);

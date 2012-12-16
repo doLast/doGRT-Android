@@ -20,14 +20,14 @@
             android:authorities="com.doLast.doGRT.database" >
         </provider>
         
-        <provider android:name=".database.UserDatabaseProvider"
+        <provider android:name="com.doLast.doGRT.database.UserDatabaseProvider"
             android:authorities="com.doLast.doGRT.userdatabase" >
         </provider>
 
         <uses-library android:name="com.google.android.maps" />
         
         <activity
-            android:name=".MainActivity"
+            android:name=".main.MainActivity"
             android:label="@string/title_activity_main" 
             android:id = "@+id/home"
             android:uiOptions="splitActionBarWhenNarrow">
@@ -39,15 +39,15 @@
         </activity>
         
         <activity 
-            android:name=".GMapsActivity">            
+            android:name=".map.GMapsActivity">            
         </activity>
 
 		<activity
-		    android:name=".RoutesActivity"
+		    android:name=".route.RoutesActivity"
 		    android:uiOptions="splitActionBarWhenNarrow">		    
 		</activity>
 		
-		<activity android:name=".SearchableActivity"
+		<activity android:name="com.doLast.doGRT.map.SearchableActivity"
 		    	  android:launchMode="singleTop">
         	<intent-filter>
             	<action android:name="android.intent.action.SEARCH" />            	

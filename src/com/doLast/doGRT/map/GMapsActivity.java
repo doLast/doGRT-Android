@@ -1,4 +1,4 @@
-package com.doLast.doGRT;
+package com.doLast.doGRT.map;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +30,16 @@ import com.actionbarsherlock.app.SherlockMapActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.doLast.doGRT.R;
+import com.doLast.doGRT.R.drawable;
+import com.doLast.doGRT.R.id;
+import com.doLast.doGRT.R.layout;
+import com.doLast.doGRT.R.menu;
+import com.doLast.doGRT.R.string;
 import com.doLast.doGRT.database.DatabaseSchema;
 import com.doLast.doGRT.database.DatabaseSchema.StopsColumns;
+import com.doLast.doGRT.main.MainActivity;
+import com.doLast.doGRT.route.RoutesActivity;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;

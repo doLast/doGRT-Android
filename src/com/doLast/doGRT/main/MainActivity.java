@@ -1,4 +1,4 @@
-package com.doLast.doGRT;
+package com.doLast.doGRT.main;
 
 import java.lang.reflect.Method;
 
@@ -31,7 +31,14 @@ import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
+import com.doLast.doGRT.R;
+import com.doLast.doGRT.R.id;
+import com.doLast.doGRT.R.layout;
+import com.doLast.doGRT.R.menu;
+import com.doLast.doGRT.custom.MyDialogFragment;
 import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
+import com.doLast.doGRT.map.GMapsActivity;
+import com.doLast.doGRT.route.RoutesActivity;
 
 public class MainActivity extends SherlockFragmentActivity {
 	// For adding a new stop from other activities

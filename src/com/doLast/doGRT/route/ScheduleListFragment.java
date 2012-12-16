@@ -1,4 +1,4 @@
-package com.doLast.doGRT;
+package com.doLast.doGRT.route;
 
 import java.util.Calendar;
 
@@ -18,6 +18,7 @@ import android.widget.TwoLineListItem;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.app.SherlockListFragment;
+import com.doLast.doGRT.R;
 import com.doLast.doGRT.database.DatabaseSchema;
 import com.doLast.doGRT.database.DatabaseSchema.CalendarColumns;
 import com.doLast.doGRT.database.DatabaseSchema.RoutesColumns;
