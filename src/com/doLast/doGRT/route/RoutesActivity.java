@@ -1,4 +1,6 @@
 package com.doLast.doGRT.route;
+import java.util.Calendar;
+
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -9,10 +11,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -101,17 +105,6 @@ public class RoutesActivity extends SherlockFragmentActivity {
         mActionBar.setDisplayShowCustomEnabled(true);
         mActionBar.setDisplayShowTitleEnabled(false);
         
-        // Setup spinner
-        String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-        Spinner spinner = (Spinner)custom_title_view.findViewById(R.id.days_spinner);
-        RouteSpinnerAdapter spinner_adapter = new RouteSpinnerAdapter(this,
-                R.layout.route_spinner_title, days, stop_title);
-        spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(spinner_adapter);
-                
-        // Set custom view
-        mActionBar.setCustomView(custom_title_view);
-        
 	    // Setup the tabs
 	    tab_listener = new TabListener<ScheduleListFragment>(this, "Tab Listener", ScheduleListFragment.class, mViewPager, mActionBar);
         // Check if tabs are already created
@@ -121,6 +114,34 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	        // Route selection tab
         	tab_listener.addTab(R.string.route_select, SCHEDULE_SELECT, tab_listener);
         }
+        
+        Calendar calendar = Calendar.getInstance();
+        int today = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+        
+        // Setup spinner
+        String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+        Spinner spinner = (Spinner)custom_title_view.findViewById(R.id.days_spinner);
+        RouteSpinnerAdapter spinner_adapter = new RouteSpinnerAdapter(this,
+                R.layout.route_spinner_title, days, stop_title, today);
+        //ArrayAdapter spinner_adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, days);
+        spinner_adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(spinner_adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int position, long id) {
+				tab_listener.setServiceId(position);				
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+				// TODO Auto-generated method stub			
+			}        	
+        });
+        spinner.setSelection(today);
+                
+        // Set custom view
+        mActionBar.setCustomView(custom_title_view);
         
         // Forcing the overflow menu (3 dots menu)
         try {
@@ -280,6 +301,11 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	        		.setTabListener(tab_listener);
 	        mActionBar.addTab(tab);
 	        ScheduleFragments[type] = ScheduleListFragment.newInstance(type);
+        }
+        
+        public void setServiceId(int position) {
+        	for(int i = 0; i < NUM_TABS; i += 1) 
+        		ScheduleFragments[i].setServiceId(position);
         }
         
 		@Override

@@ -58,6 +58,11 @@ public class ScheduleListFragment extends SherlockListFragment {
 	private final String LAST_VIEW = "last_view"; // Whether user has selected a single route
 	private final String SAVE_ROUTE_ID = "save_route_id";
 	
+	// Alias of days with custom days
+	static public final int DAYS[] = {Calendar.SUNDAY, Calendar.MONDAY, Calendar.TUESDAY,
+									Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY,
+									Calendar.SATURDAY};
+	
     public static ScheduleListFragment newInstance(int type) {
     	ScheduleListFragment f = new ScheduleListFragment(type);
         return f;
@@ -82,20 +87,10 @@ public class ScheduleListFragment extends SherlockListFragment {
 		stop_title = mActivity.getStopTitle();
 		
         // Determine service id
-    	service_ids = getServiecId(true);
-    	yesterday_service_ids = getServiecId(false);		
+    	service_ids = getTodayServiceId();
+    	yesterday_service_ids = getYesterdayServiceId();		
     	
-    	// Display schedule
-    	switch(display_type) {
-    	case RoutesActivity.SCHEDULE_MIXED:
-			displaySchedule(stop_id, null);
-			break;
-    	case RoutesActivity.SCHEDULE_SELECT:
-			displayRoutes(stop_id);
-		    single_route = false;
-			break;
-    	default:
-		}
+    	displaySchedule();
     	
     	ListView list_view = getListView();
     	TextView text_view = (TextView)mActivity.findViewById(R.id.schedule_empty_view);
@@ -136,19 +131,30 @@ public class ScheduleListFragment extends SherlockListFragment {
     	single_route = false;
     	displayRoutes(stop_id);    	
     }
+	
+	private void displaySchedule() {
+    	// Display schedule
+    	switch(display_type) {
+    	case RoutesActivity.SCHEDULE_MIXED:
+			displaySchedule(stop_id, null);
+			break;
+    	case RoutesActivity.SCHEDULE_SELECT:
+			displayRoutes(stop_id);
+		    single_route = false;
+			break;
+    	default:
+		}
+	}
     
     /** 
      * Retrieve service ids
-     * @param today true - today's service id, false- yesterday's service id
+     * @param today day of week in int (Java Calendar)
      */
-	private String getServiecId(boolean today) {
+	private String getServiceId(int day) {
     	String service_ids = new String("");
     	String selection = new String("");
-    	Calendar calendar = Calendar.getInstance();
-    	// Yesterday
-    	if (!today) calendar.add(Calendar.DAY_OF_WEEK, -1);
-    	
-        switch(calendar.get(Calendar.DAY_OF_WEEK)) {
+
+        switch(day) {
         case Calendar.SUNDAY:
         	selection = "sunday";
         	break;
@@ -185,6 +191,25 @@ public class ScheduleListFragment extends SherlockListFragment {
         //services.close();
         return service_ids;
     }
+	
+	public String getTodayServiceId() {
+    	Calendar calendar = Calendar.getInstance();
+    	return getServiceId(calendar.get(Calendar.DAY_OF_WEEK));
+	}
+	
+	public String getYesterdayServiceId() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DAY_OF_WEEK, -1);
+		return getServiceId(calendar.get(Calendar.DAY_OF_WEEK));
+	}
+	
+	public void setServiceId(int position) {
+		// Set up service id
+		service_ids = getServiceId(DAYS[position]);
+		yesterday_service_ids = getServiceId(DAYS[(position + 6) % 7]);
+		// Display the new schedule
+		displaySchedule();
+	}
     
 	
 	// Display the schedule with given stop id and route id, route_id can be null if want mixed schedule
