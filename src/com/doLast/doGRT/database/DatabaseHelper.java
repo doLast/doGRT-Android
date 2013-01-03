@@ -21,7 +21,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // The Database from GRT database
     private static String DB_PATH = "/data/data/com.doLast.doGRT/databases/"; 
     private static String DB_NAME = "GRT_GTFS.sqlite";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
     
     private SQLiteDatabase myDataBase;
     private final Context myContext;

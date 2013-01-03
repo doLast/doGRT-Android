@@ -17,7 +17,7 @@ public final class DatabaseSchema {
     
     public static final String STOP_TIME_TRIP_ROUTE_JOINT = "stop_time_trip_route_joint";
     public static final Uri STTRJ_CONTENT_URI = Uri.parse(URI_PREFIX + "/" + STOP_TIME_TRIP_ROUTE_JOINT);
-    
+   
 	// This class cannot be instantiated
 	private DatabaseSchema() {}
 	/** Definition for convenience use */
@@ -154,11 +154,17 @@ public final class DatabaseSchema {
          * The MIME type of a {@link #CONTENT_URI} sub-directory of a single note.
          */
         public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/" + TABLE_NAME;
-        
+
         /**
          * The default sort order for this table
          */
         public static final String DEFAULT_SORT_ORDER = "";
+        
+        /**
+         * Calendar Date ID
+         * Type: INTEGER
+         */
+        public static final String CALENDAR_DATE_ID = "calendar_date_id";
         
         /**
          * Service id
@@ -180,7 +186,7 @@ public final class DatabaseSchema {
 	}
 	
 	public static final class CalendarColumns implements BaseColumns {
-		public static final String TABLE_NAME = "Calendar";
+		public static final String TABLE_NAME = "calendar";
 		
 		// This class cannot be instantiated
 		private CalendarColumns() {}
@@ -209,7 +215,7 @@ public final class DatabaseSchema {
          * Service id (Primary Key)
          * Type: VARCHAR
          */
-        public static final String SERVICE_ID = "serviceId";
+        public static final String SERVICE_ID = "service_id";
         
         /**
          * Monday, Tuesday, Wednesday, Thursday, Friday, Saturday and Sunday
@@ -227,8 +233,8 @@ public final class DatabaseSchema {
          * Start date and end date (valid period of the schedule)
          * Type: INTEGER (Example: 14:30:00 -> 143000) 
          */
-        public static final String START_DATE = "startDate";
-        public static final String END_DATE = "endDate";
+        public static final String START_DATE = "start_date";
+        public static final String END_DATE = "end_date";
         
 	}
 	
@@ -296,7 +302,7 @@ public final class DatabaseSchema {
 	}
 	
 	public static final class RoutesColumns implements BaseColumns {
-		public static final String TABLE_NAME = "Route";
+		public static final String TABLE_NAME = "routes";
 		
 		// This class cannot be instantiated
 		private RoutesColumns() {}
@@ -320,7 +326,7 @@ public final class DatabaseSchema {
          * Route id (Primary Key)
          * Type: VARCHAR
          */
-        public static final String ROUTE_ID = "routeId";
+        public static final String ROUTE_ID = "route_id";
         
         /**
          * Agency id
@@ -332,13 +338,13 @@ public final class DatabaseSchema {
          * Route short name
          * Type: VARCHAR
          */
-        public static final String SHORT_NAME = "routeShortName";
+        public static final String SHORT_NAME = "route_short_name";
         
         /**
          * Route long name
          * Type: VARCHAR
          */
-        public static final String LONG_NAME = "routeLongName";
+        public static final String LONG_NAME = "route_long_name";
         
         /**
          * Route description
@@ -350,7 +356,7 @@ public final class DatabaseSchema {
          * Route type 
          * Type: INTEGER
          */
-        public static final String TYPE = "type";
+        public static final String TYPE = "route_type";
         
         /**
          * Route url
@@ -425,7 +431,7 @@ public final class DatabaseSchema {
 	}
 	
 	public static final class StopTimesColumns implements BaseColumns {
-		public static final String TABLE_NAME = "StopTime";
+		public static final String TABLE_NAME = "stop_times";
 		
 		// This class cannot be instantiated
 		private StopTimesColumns() {}
@@ -449,31 +455,31 @@ public final class DatabaseSchema {
          * Trip id (Primary Key)
          * Type: INTEGER
          */
-        public static final String TRIP_ID = "tripId";
+        public static final String TRIP_ID = "trip_id";
         
         /**
          * Arrival time
          * Type: INTEGER
          */
-        public static final String ARRIVAL = "arrivalTime";
+        public static final String ARRIVAL = "arrival_time";
         
         /**
          * Departure time
          * Type: INTEGER
          */
-        public static final String DEPART = "departureTime";
+        public static final String DEPART = "departure_time";
         
         /**
          * Stop id
          * Type: INTEGER
          */
-        public static final String STOP_ID = "stopId";
+        public static final String STOP_ID = "stop_id";
                 
         /**
          * Stop sequence (Primary Key)
          * Type: INTEGER
          */
-        public static final String STOP_SEQ = "stopSequence";
+        public static final String STOP_SEQ = "stop_sequence";
         
         /**
          * Stop headsign
@@ -501,7 +507,7 @@ public final class DatabaseSchema {
 	}
 	
 	public static final class StopsColumns implements BaseColumns {
-		public static final String TABLE_NAME = "BusStop";
+		public static final String TABLE_NAME = "stops";
 		
 		// This class cannot be instantiated
 		private StopsColumns() {}
@@ -525,7 +531,7 @@ public final class DatabaseSchema {
          * Stop id (Primary Key)
          * Type: INTEGER
          */
-        public static final String STOP_ID = "stopId";
+        public static final String STOP_ID = "stop_id";
         
         /**
          * Stop code
@@ -537,7 +543,7 @@ public final class DatabaseSchema {
          * Stop name
          * Type: VARCHAR 
          */
-        public static final String STOP_NAME = "stopName";
+        public static final String STOP_NAME = "stop_name";
         
         /**
          * Stop description
@@ -549,13 +555,13 @@ public final class DatabaseSchema {
          * Stop latitude
          * Type: DOUBLE
          */
-        public static final String STOP_LAT = "stopLat";
+        public static final String STOP_LAT = "stop_lat";
         
         /**
          * Stop longitude
          * Type: DOUBLE
          */
-        public static final String STOP_LON = "stopLon";
+        public static final String STOP_LON = "stop_lon";
         
         /**
          * Zone id
@@ -595,7 +601,7 @@ public final class DatabaseSchema {
 	}
 	
 	public static final class TripsColumns implements BaseColumns {
-		public static final String TABLE_NAME = "Trip";
+		public static final String TABLE_NAME = "trips";
 		
 		// This class cannot be instantiated
 		private TripsColumns() {}
@@ -619,25 +625,25 @@ public final class DatabaseSchema {
          * Route id
          * Type: VARCHAR
          */
-        public static final String ROUTE_ID = "routeId";
+        public static final String ROUTE_ID = "route_id";
         
         /**
          * Service id
          * Type: VARCHAR
          */
-        public static final String SERVICE_ID = "serviceId";
+        public static final String SERVICE_ID = "service_id";
         
         /**
          * Trip id (Primary Key)
          * Type: INTEGER
          */
-        public static final String TRIP_ID = "tripId";
+        public static final String TRIP_ID = "trip_id";
         
         /**
          * Trip headsign
          * Type: VARCHAR
          */
-        public static final String HEADSIGN = "tripHeadsign";
+        public static final String HEADSIGN = "trip_headsign";
         
         /**
          * Trip short name
