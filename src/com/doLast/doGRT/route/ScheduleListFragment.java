@@ -79,7 +79,7 @@ public class ScheduleListFragment extends SherlockListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 	   	super.onActivityCreated(savedInstanceState);
-		mActivity = (RoutesActivity)getActivity();
+		if (mActivity == null ) mActivity = (RoutesActivity)getActivity();
 		
 		// Get the stop id, name and title
 		stop_id = mActivity.getStopId();
@@ -90,7 +90,7 @@ public class ScheduleListFragment extends SherlockListFragment {
     	service_ids = getTodayServiceId();
     	yesterday_service_ids = getYesterdayServiceId();		
     	
-    	displaySchedule();
+    	//displaySchedule();
     	
     	ListView list_view = getListView();
     	TextView text_view = (TextView)mActivity.findViewById(R.id.schedule_empty_view);
@@ -132,7 +132,7 @@ public class ScheduleListFragment extends SherlockListFragment {
     	displayRoutes(stop_id);    	
     }
 	
-	private void displaySchedule() {
+	public void displaySchedule() {
     	// Display schedule
     	switch(display_type) {
     	case RoutesActivity.SCHEDULE_MIXED:
@@ -207,13 +207,11 @@ public class ScheduleListFragment extends SherlockListFragment {
 		// Set up service id
 		service_ids = getServiceId(DAYS[position]);
 		yesterday_service_ids = getServiceId(DAYS[(position + 6) % 7]);
-		// Display the new schedule
-		displaySchedule();
 	}
     
 	
 	// Display the schedule with given stop id and route id, route_id can be null if want mixed schedule
-    private void displaySchedule(String stop_id, String route_id) {    	
+    private void displaySchedule(String stop_id, String route_id) {   
         // Remember to perform an alias of our own primary key to _id so the adapter knows what to do
         String[] projection = { StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.TRIP_ID + " as _id", 
         						StopTimesColumns.DEPART,
@@ -236,8 +234,8 @@ public class ScheduleListFragment extends SherlockListFragment {
         String orderBy = StopTimesColumns.DEPART;
         // Today's schedule
         Cursor stop_times = mActivity.managedQuery(
-        		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);
-                
+        		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);      
+        
         // Yesterday's schedule
         // Modify selection
         selection =  stop_time_id + " = " + stop_id + " AND " +
@@ -282,7 +280,7 @@ public class ScheduleListFragment extends SherlockListFragment {
                 uiBindFrom, uiBindTo, cur_pos);
         setListAdapter(adapter);
         if (cur_pos >= LEFT_BUSES_OFFSET && time_count - cur_pos >= LEFT_BUSES_OFFSET) cur_pos -= LEFT_BUSES_OFFSET;
-        setSelection(cur_pos);           
+        setSelection(cur_pos);         
     }
     
     private void displayRoutes(String stop_id) {    	

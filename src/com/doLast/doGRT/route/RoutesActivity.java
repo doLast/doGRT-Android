@@ -277,6 +277,8 @@ public class RoutesActivity extends SherlockFragmentActivity {
         private final ViewPager mViewPager;
         private final ActionBar mActionBar;
     	
+        private int cur_tab = 0; // Current selected tab
+        
         /** Constructor used each time a new tab is created.
          * @param activity  The host Activity, used to instantiate the fragment
          * @param tag  The identifier tag for the fragment
@@ -306,6 +308,8 @@ public class RoutesActivity extends SherlockFragmentActivity {
         public void setServiceId(int position) {
         	for(int i = 0; i < NUM_TABS; i += 1) 
         		ScheduleFragments[i].setServiceId(position);
+    		// Display the new schedule on selected tab
+        	ScheduleFragments[cur_tab].displaySchedule();
         }
         
 		@Override
@@ -323,6 +327,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
 				ft.attach(ScheduleFragments[type]);
 			}*/		
 			mViewPager.setCurrentItem(type);
+			cur_tab = type;
 		}
 	
 		@Override
@@ -364,6 +369,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
 		@Override
 		public void onPageSelected(int type) {
 			mActionBar.setSelectedNavigationItem(type);
+			ScheduleFragments[type].displaySchedule();
 		}
 
 		@Override
