@@ -44,7 +44,8 @@
 
 		<activity
 		    android:name=".route.RoutesActivity"
-		    android:uiOptions="splitActionBarWhenNarrow">		    
+		    android:uiOptions="splitActionBarWhenNarrow"
+		    android:screenOrientation="portrait">		    
 		</activity>
 		
 		<activity android:name="com.doLast.doGRT.map.SearchableActivity"

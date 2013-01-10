@@ -1,5 +1,7 @@
 package com.doLast.doGRT.route;
 import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.List;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -16,6 +18,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -38,6 +41,8 @@ import com.doLast.doGRT.main.MainActivity;
 import com.doLast.doGRT.map.GMapsActivity;
 
 public class RoutesActivity extends SherlockFragmentActivity {
+	private final String mTag = "RouteActivity";
+	
 	// For choosing between different view from other activities
 	public static final String STOP_ID = "stop_id";
 	public static final String STOP_NAME = "stop_name";
@@ -63,6 +68,9 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	
 	// Constants for save instance
 	private final String SELECTED_TAB = "selected_tab";
+	
+	// Spinner
+	private Spinner spinner = null;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -110,9 +118,9 @@ public class RoutesActivity extends SherlockFragmentActivity {
         // Check if tabs are already created
         if (mActionBar.getTabCount() == 0) {
         	// Mixed schedule tab
-        	tab_listener.addTab(R.string.mixed_schedule, SCHEDULE_MIXED, tab_listener);
+        	tab_listener.addTab(R.string.mixed_schedule, SCHEDULE_MIXED);
 	        // Route selection tab
-        	tab_listener.addTab(R.string.route_select, SCHEDULE_SELECT, tab_listener);
+        	tab_listener.addTab(R.string.route_select, SCHEDULE_SELECT);
         }
         
         Calendar calendar = Calendar.getInstance();
@@ -120,7 +128,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
         
         // Setup spinner
         String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-        Spinner spinner = (Spinner)custom_title_view.findViewById(R.id.days_spinner);
+        spinner = (Spinner)custom_title_view.findViewById(R.id.days_spinner);
         RouteSpinnerAdapter spinner_adapter = new RouteSpinnerAdapter(this,
                 R.layout.route_spinner_title, days, stop_title, today);
         //ArrayAdapter spinner_adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, days);
@@ -136,10 +144,10 @@ public class RoutesActivity extends SherlockFragmentActivity {
 			@Override
 			public void onNothingSelected(AdapterView<?> arg0) {
 				// TODO Auto-generated method stub			
-			}        	
+			}
         });
         spinner.setSelection(today);
-                
+        
         // Set custom view
         mActionBar.setCustomView(custom_title_view);
         
@@ -164,7 +172,6 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		
 		// Save previously selected tab
 		outState.putInt(SELECTED_TAB, getSupportActionBar().getSelectedNavigationIndex());
 	}
@@ -181,7 +188,6 @@ public class RoutesActivity extends SherlockFragmentActivity {
 	        } else {
 	        	menu.removeItem(R.id.delete_option);
 	        }
-	        Log.v("Stop count", user.getCount() + "");
 			//user.close();
 		}
 		return true;
@@ -276,7 +282,7 @@ public class RoutesActivity extends SherlockFragmentActivity {
         private final Class<T> mClass;
         private final ViewPager mViewPager;
         private final ActionBar mActionBar;
-    	
+            	
         private int cur_tab = 0; // Current selected tab
         
         /** Constructor used each time a new tab is created.
@@ -296,18 +302,22 @@ public class RoutesActivity extends SherlockFragmentActivity {
         	ScheduleFragments = new ScheduleListFragment[NUM_TABS];
         }
     	
-        public void addTab(int text, int type, TabListener tab_listener) {
+        public void addTab(int text, int type) {
 	        Tab tab = mActionBar.newTab()
 	        		.setText(text)
 	        		.setTag(type)
-	        		.setTabListener(tab_listener);
+	        		.setTabListener(this);
 	        mActionBar.addTab(tab);
-	        ScheduleFragments[type] = ScheduleListFragment.newInstance(type);
+/*	        if (ScheduleFragments[type] == null) 
+	        	ScheduleFragments[type] = ScheduleListFragment.newInstance();
+	        ScheduleFragments[type].setType(type);*/
         }
         
         public void setServiceId(int position) {
-        	for(int i = 0; i < NUM_TABS; i += 1) 
+        	for(int i = 0; i < NUM_TABS; i += 1) {
+        		Log.v(mTag, ScheduleFragments[i].toString());
         		ScheduleFragments[i].setServiceId(position);
+        	}
     		// Display the new schedule on selected tab
         	ScheduleFragments[cur_tab].displaySchedule();
         }
@@ -374,8 +384,10 @@ public class RoutesActivity extends SherlockFragmentActivity {
 
 		@Override
 		public Fragment getItem(int type) {
-			if (ScheduleFragments[type] == null) 
-				ScheduleFragments[type] = ScheduleListFragment.newInstance(type);
+			if (ScheduleFragments[type] == null) {
+				ScheduleFragments[type] = ScheduleListFragment.newInstance();				
+			}
+			ScheduleFragments[type].setType(type);
 			return ScheduleFragments[type];
 		}
 

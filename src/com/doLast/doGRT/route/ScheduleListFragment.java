@@ -3,6 +3,7 @@ package com.doLast.doGRT.route;
 import java.util.Calendar;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.MergeCursor;
 import android.os.Bundle;
@@ -63,23 +64,19 @@ public class ScheduleListFragment extends SherlockListFragment {
 									Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY,
 									Calendar.SATURDAY};
 	
-    public static ScheduleListFragment newInstance(int type) {
-    	ScheduleListFragment f = new ScheduleListFragment(type);
+	static ScheduleListFragment newInstance() {
+    	ScheduleListFragment f = new ScheduleListFragment();
         return f;
     }
-    
-    // For orientation change
-    public ScheduleListFragment() {}
-    
-    private ScheduleListFragment(int type) {
-    	display_type = type;
-    }
+
+	public void setType(int type) {
+		display_type = type;
+	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
+	public void onActivityCreated(Bundle savedInstanceState) {	
 	   	super.onActivityCreated(savedInstanceState);
-		if (mActivity == null ) mActivity = (RoutesActivity)getActivity();
+		mActivity = (RoutesActivity)getActivity();
 		
 		// Get the stop id, name and title
 		stop_id = mActivity.getStopId();
@@ -102,10 +99,16 @@ public class ScheduleListFragment extends SherlockListFragment {
     		single_route = savedInstanceState.getBoolean(LAST_VIEW, false);
     		route_id = savedInstanceState.getString(SAVE_ROUTE_ID);
     		if (single_route) displaySchedule(stop_id, route_id);
-    	}
+    	}    	
+    	
 	}		
 	
     @Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+	}
+
+	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		
@@ -179,7 +182,7 @@ public class ScheduleListFragment extends SherlockListFragment {
         default:
         	break;
         }
-        
+
         String[] projection = { CalendarColumns.SERVICE_ID };
         Cursor services = mActivity.managedQuery(CalendarColumns.CONTENT_URI, projection, selection, null, null);
         services.moveToFirst();
@@ -207,8 +210,8 @@ public class ScheduleListFragment extends SherlockListFragment {
 		// Set up service id
 		service_ids = getServiceId(DAYS[position]);
 		yesterday_service_ids = getServiceId(DAYS[(position + 6) % 7]);
-	}
-    
+		
+	}    
 	
 	// Display the schedule with given stop id and route id, route_id can be null if want mixed schedule
     private void displaySchedule(String stop_id, String route_id) {   
