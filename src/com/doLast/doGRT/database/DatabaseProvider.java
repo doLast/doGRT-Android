@@ -30,6 +30,7 @@ public class DatabaseProvider extends ContentProvider {
     private static final int TRIP = 400;
     private static final int STOP_TIME = 500;
     private static final int STOP_TIME_TRIP_ROUTE = 600;
+    private static final int TRIP_SHAPE = 700;
      
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
@@ -39,6 +40,7 @@ public class DatabaseProvider extends ContentProvider {
     	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.TripsColumns.TABLE_NAME, TRIP);
     	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.StopTimesColumns.TABLE_NAME, STOP_TIME);
     	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.STOP_TIME_TRIP_ROUTE_JOINT, STOP_TIME_TRIP_ROUTE);
+    	sUriMatcher.addURI(DatabaseSchema.AUTHORITY, DatabaseSchema.TRIP_SHAPE_JOINT, TRIP_SHAPE);
     }
     
 	@Override
@@ -104,6 +106,10 @@ public class DatabaseProvider extends ContentProvider {
 	    	table = DatabaseSchema.StopTimesColumns.TABLE_NAME + ", " + 
 	    			DatabaseSchema.TripsColumns.TABLE_NAME + ", " +
 	    			DatabaseSchema.RoutesColumns.TABLE_NAME;
+	    	break;
+	    case TRIP_SHAPE:
+	    	table = DatabaseSchema.TripsColumns.TABLE_NAME + " , " +
+	    			DatabaseSchema.ShapesColumns.TABLE_NAME;
 	    	break;
 	    default:
 	    	throw new IllegalArgumentException("Unknown URI " + uri);

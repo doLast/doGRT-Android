@@ -17,6 +17,9 @@ public final class DatabaseSchema {
     
     public static final String STOP_TIME_TRIP_ROUTE_JOINT = "stop_time_trip_route_joint";
     public static final Uri STTRJ_CONTENT_URI = Uri.parse(URI_PREFIX + "/" + STOP_TIME_TRIP_ROUTE_JOINT);
+    
+    public static final String TRIP_SHAPE_JOINT = "trip_shape_joint";
+    public static final Uri TS_CONTENT_URI = Uri.parse(URI_PREFIX + "/" + TRIP_SHAPE_JOINT);
    
 	// This class cannot be instantiated
 	private DatabaseSchema() {}
@@ -409,25 +412,25 @@ public final class DatabaseSchema {
          * Shape point's latitude
          * Type: TEXT 
          */
-        public static final String SHAPE_LAT = "shape_latitude";
+        public static final String SHAPE_LAT = "shape_pt_lat";
         
         /**
          * Shape point's longitude
          * Type: TEXT
          */
-        public static final String SHAPE_LON = "shape_longitude";
+        public static final String SHAPE_LON = "shape_pt_lon";
         
         /**
          * Shape point's sequence
          * Type: INTEGER 
          */
-        public static final String SHAPE_SEQ = "shape_sequence";
+        public static final String SHAPE_SEQ = "shape_pt_sequence";
         
         /**
          * Shape distance traveled
          * Type: TEXT
          */
-        public static final String SHAPE_DIST = "shape_distance";
+        public static final String SHAPE_DIST = "shape_dist_traveled";
 	}
 	
 	public static final class StopTimesColumns implements BaseColumns {

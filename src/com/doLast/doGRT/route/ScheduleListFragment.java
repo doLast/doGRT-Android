@@ -2,22 +2,17 @@ package com.doLast.doGRT.route;
 
 import java.util.Calendar;
 
-import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.MergeCursor;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.TwoLineListItem;
 
-import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.app.SherlockListFragment;
 import com.doLast.doGRT.R;
 import com.doLast.doGRT.database.DatabaseSchema;
@@ -25,8 +20,10 @@ import com.doLast.doGRT.database.DatabaseSchema.CalendarColumns;
 import com.doLast.doGRT.database.DatabaseSchema.RoutesColumns;
 import com.doLast.doGRT.database.DatabaseSchema.StopTimesColumns;
 import com.doLast.doGRT.database.DatabaseSchema.TripsColumns;
+import com.doLast.doGRT.main.MainActivity;
+import com.doLast.doGRT.map.GMapsActivity;
 
-public class ScheduleListFragment extends SherlockListFragment {
+public class ScheduleListFragment extends SherlockListFragment {	
 	public static final String mTag = "ScheduleListFragment";
 	private RoutesActivity mActivity = null;
 	
@@ -125,6 +122,12 @@ public class ScheduleListFragment extends SherlockListFragment {
     		TwoLineListItem text_view = (TwoLineListItem)v;
     		route_id = (String) text_view.getText2().getText();
     		displaySchedule(stop_id, route_id);
+    	} else {
+    		TextView text_view = (TextView)v.findViewById(R.id.route_name);
+    		route_id = ((String)(text_view.getText())).split(" ")[0];
+        	Intent map_intent = new Intent(mActivity, GMapsActivity.class);
+        	map_intent.putExtra(GMapsActivity.GMAP_ROUTE_ID, route_id);
+        	startActivity(map_intent);
     	}
     	
 		super.onListItemClick(l, v, position, id);
@@ -214,79 +217,13 @@ public class ScheduleListFragment extends SherlockListFragment {
 	}    
 	
 	// Display the schedule with given stop id and route id, route_id can be null if want mixed schedule
-    private void displaySchedule(String stop_id, String route_id) {   
-        // Remember to perform an alias of our own primary key to _id so the adapter knows what to do
-        String[] projection = { StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.TRIP_ID + " as _id", 
-        						StopTimesColumns.DEPART,
-        						RoutesColumns.LONG_NAME,
-        						RoutesColumns.TABLE_NAME + "." + RoutesColumns.ROUTE_ID,
-        						TripsColumns.TABLE_NAME + "." + TripsColumns.HEADSIGN };
-        // Some complex selection for selecting from 3 tables
-        String stop_time_id = StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.STOP_ID;
-        String stop_time_trip_id = StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.TRIP_ID;
-        String trip_trip_id = TripsColumns.TABLE_NAME + "." + TripsColumns.TRIP_ID;
-        String trip_route_id = TripsColumns.TABLE_NAME + "." + TripsColumns.ROUTE_ID;
-        String trip_service_id = TripsColumns.TABLE_NAME + "." + TripsColumns.SERVICE_ID;
-        String route_route_id = RoutesColumns.TABLE_NAME + "." + RoutesColumns.ROUTE_ID;
-        
-        String selection =  stop_time_id + " = " + stop_id + " AND " +
-        					stop_time_trip_id + " = " + trip_trip_id + " AND " +
-        					trip_route_id + " = " + route_route_id + " AND " +
-        					"(" + service_ids + ")";
-        selection = checkSingleRoutSelection(selection, route_id);
-        String orderBy = StopTimesColumns.DEPART;
-        // Today's schedule
-        Cursor stop_times = mActivity.managedQuery(
-        		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);      
-        
-        // Yesterday's schedule
-        // Modify selection
-        selection =  stop_time_id + " = " + stop_id + " AND " +
-				stop_time_trip_id + " = " + trip_trip_id + " AND " +
-				trip_route_id + " = " + route_route_id + " AND " +
-				"(" + yesterday_service_ids + ")" + " AND " +
-				StopTimesColumns.DEPART + " >= " + 240000;
-        selection = checkSingleRoutSelection(selection, route_id);      
-        Cursor yesterday_stop_times = mActivity.managedQuery(
-        		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);
-        
-        MergeCursor merge_stop_times = new MergeCursor(new Cursor[] { yesterday_stop_times, stop_times });
-        
-        String[] uiBindFrom = { StopTimesColumns.DEPART, RoutesColumns.ROUTE_ID, RoutesColumns.LONG_NAME };
-        int[] uiBindTo = { R.id.depart_time, R.id.route_name };                 
-                
-        // Move adapter to schedule close to current time
-        Calendar time = Calendar.getInstance();
-        int cur_time = time.get(Calendar.HOUR_OF_DAY) * 10000;
-        cur_time += time.get(Calendar.MINUTE) * 100;
-        cur_time += time.get(Calendar.SECOND);
-        
-        // Iterate through cursor
-        int cur_pos = 0;
-        stop_times.moveToFirst();
-        int time_count = stop_times.getCount();
-        for(int i = 0; i < time_count; i += 1) {        	
-        	int depart = stop_times.getInt(1); // Get the departure time from cursor as and integer
-        	if ( depart > cur_time ) {
-        		cur_pos = i;
-        		//section = COMING_BUSES;
-        		break;
-        	}
-        	stop_times.moveToNext();
-        }            
-        
-        // Includes yesterday's time into the offset to make the divider accurate
-        cur_pos += yesterday_stop_times.getCount();
-        
-        // Assign adapter to ListView
-        adapter = new ScheduleAdapter(mActivity, R.layout.schedule, merge_stop_times,
-                uiBindFrom, uiBindTo, cur_pos);
-        setListAdapter(adapter);
-        if (cur_pos >= LEFT_BUSES_OFFSET && time_count - cur_pos >= LEFT_BUSES_OFFSET) cur_pos -= LEFT_BUSES_OFFSET;
-        setSelection(cur_pos);         
+    private void displaySchedule(String stop_id, String route_id) {
+    	// Run the display schedule thread
+    	DisplaySchedule dp = new DisplaySchedule(stop_id, route_id);
+    	mActivity.runOnUiThread(dp);
     }
     
-    private void displayRoutes(String stop_id) {    	
+    private void displayRoutes(String stop_id) {
         // Remember to perform an alias of our own primary key to _id so the adapter knows what to do
         String[] projection = { RoutesColumns.TABLE_NAME + "." + RoutesColumns.ROUTE_ID + " as _id", 
         						RoutesColumns.LONG_NAME };
@@ -327,4 +264,88 @@ public class ScheduleListFragment extends SherlockListFragment {
     public boolean isSingleRouteDisplayed() {
     	return single_route;
     }        
+    
+	// To improve the display latency
+    private class DisplaySchedule implements Runnable {
+    	private String stop_id = null;
+    	private String route_id = null;
+    	
+    	DisplaySchedule(String stop_id, String route_id) {
+    		this.stop_id = stop_id;
+    		this.route_id = route_id;
+    	}
+    	
+		@Override
+		public void run() {
+	        // Remember to perform an alias of our own primary key to _id so the adapter knows what to do
+	        String[] projection = { StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.TRIP_ID + " as _id", 
+	        						StopTimesColumns.DEPART,
+	        						RoutesColumns.LONG_NAME,
+	        						RoutesColumns.TABLE_NAME + "." + RoutesColumns.ROUTE_ID,
+	        						TripsColumns.TABLE_NAME + "." + TripsColumns.HEADSIGN };
+	        // Some complex selection for selecting from 3 tables
+	        String stop_time_id = StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.STOP_ID;
+	        String stop_time_trip_id = StopTimesColumns.TABLE_NAME + "." + StopTimesColumns.TRIP_ID;
+	        String trip_trip_id = TripsColumns.TABLE_NAME + "." + TripsColumns.TRIP_ID;
+	        String trip_route_id = TripsColumns.TABLE_NAME + "." + TripsColumns.ROUTE_ID;
+	        String trip_service_id = TripsColumns.TABLE_NAME + "." + TripsColumns.SERVICE_ID;
+	        String route_route_id = RoutesColumns.TABLE_NAME + "." + RoutesColumns.ROUTE_ID;
+	        
+	        String selection =  stop_time_id + " = " + stop_id + " AND " +
+	        					stop_time_trip_id + " = " + trip_trip_id + " AND " +
+	        					trip_route_id + " = " + route_route_id + " AND " +
+	        					"(" + service_ids + ")";
+	        selection = checkSingleRoutSelection(selection, route_id);
+	        String orderBy = StopTimesColumns.DEPART;
+	        // Today's schedule
+	        Cursor stop_times = mActivity.managedQuery(
+	        		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);      
+	        
+	        // Yesterday's schedule
+	        // Modify selection
+	        selection =  stop_time_id + " = " + stop_id + " AND " +
+					stop_time_trip_id + " = " + trip_trip_id + " AND " +
+					trip_route_id + " = " + route_route_id + " AND " +
+					"(" + yesterday_service_ids + ")" + " AND " +
+					StopTimesColumns.DEPART + " >= " + 240000;
+	        selection = checkSingleRoutSelection(selection, route_id);      
+	        Cursor yesterday_stop_times = mActivity.managedQuery(
+	        		DatabaseSchema.STTRJ_CONTENT_URI, projection, selection, null, orderBy);
+	        
+	        MergeCursor merge_stop_times = new MergeCursor(new Cursor[] { yesterday_stop_times, stop_times });
+	        
+	        String[] uiBindFrom = { StopTimesColumns.DEPART, RoutesColumns.ROUTE_ID, RoutesColumns.LONG_NAME };
+	        int[] uiBindTo = { R.id.depart_time, R.id.route_name };                 
+	                
+	        // Move adapter to schedule close to current time
+	        Calendar time = Calendar.getInstance();
+	        int cur_time = time.get(Calendar.HOUR_OF_DAY) * 10000;
+	        cur_time += time.get(Calendar.MINUTE) * 100;
+	        cur_time += time.get(Calendar.SECOND);
+	        
+	        // Iterate through cursor
+	        int cur_pos = 0;
+	        stop_times.moveToFirst();
+	        int time_count = stop_times.getCount();
+	        for(int i = 0; i < time_count; i += 1) {        	
+	        	int depart = stop_times.getInt(1); // Get the departure time from cursor as and integer
+	        	if ( depart > cur_time ) {
+	        		cur_pos = i;
+	        		//section = COMING_BUSES;
+	        		break;
+	        	}
+	        	stop_times.moveToNext();
+	        }            
+	        
+	        // Includes yesterday's time into the offset to make the divider accurate
+	        cur_pos += yesterday_stop_times.getCount();
+	        
+	        // Assign adapter to ListView	        
+	        adapter = new ScheduleAdapter(mActivity, R.layout.schedule, merge_stop_times,
+	                uiBindFrom, uiBindTo, cur_pos);
+	        setListAdapter(adapter);
+	        if (cur_pos >= LEFT_BUSES_OFFSET && time_count - cur_pos >= LEFT_BUSES_OFFSET) cur_pos -= LEFT_BUSES_OFFSET;
+	        setSelection(cur_pos);
+		}    	
+    }
 }

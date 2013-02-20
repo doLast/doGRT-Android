@@ -1,6 +1,7 @@
 <resources>
 
     <string name="app_name">doGRT</string>
+    <string name="app_version">doGRT 1.1</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_main">doGRT</string>
     <string name="title_activity_main1">MainActivity</string>

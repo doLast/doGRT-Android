@@ -1,15 +1,16 @@
 package com.doLast.doGRT.database;
 
-import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
-
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.util.Log;
+
+import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
 
 public class UserDatabaseHelper extends SQLiteOpenHelper {
     // The Database from user database
-    private static String DB_PATH = "/data/data/com.doLast.doGRT/databases/"; 
+    private static String DB_PATH = Environment.getDataDirectory() + "/data/com.doLast.doGRT/databases/"; 
     private static String DB_NAME = "USER.sqlite";
     private static final int DB_VERSION = 3;
     

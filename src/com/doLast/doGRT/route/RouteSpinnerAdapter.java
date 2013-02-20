@@ -1,10 +1,6 @@
 package com.doLast.doGRT.route;
 
-import com.doLast.doGRT.R;
-
 import android.content.Context;
-import android.text.Html;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;

@@ -1,6 +1,5 @@
 package com.doLast.doGRT.database;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,7 +8,9 @@ import java.io.OutputStream;
 import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.util.Log;
 
 /** This class helps create and update the database
@@ -19,7 +20,7 @@ import android.util.Log;
  */
 public class DatabaseHelper extends SQLiteOpenHelper {	
     // The Database from GRT database
-    private static String DB_PATH = "/data/data/com.doLast.doGRT/databases/"; 
+    private static String DB_PATH = Environment.getDataDirectory() + "/data/com.doLast.doGRT/databases/"; 
     private static String DB_NAME = "GRT_GTFS.sqlite";
     private static final int DB_VERSION = 4;
     
@@ -54,7 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * return true if it exists, false if it doesn't
      */
     private boolean checkDataBase(){
-/*    	SQLiteDatabase checkDB = null;
+    	SQLiteDatabase checkDB = null;
  
 	   	try{
     		String myPath = DB_PATH + DB_NAME;
@@ -70,11 +71,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     		checkDB.close();
     	}
     	
-    	return checkDB != null ? true : false;*/
+    	return checkDB != null ? true : false;
     	
     	// Another way of checking if the database exists
-		File db_file = new File(DB_PATH + DB_NAME);
-		return db_file.exists();
+		//File db_file = new File(DB_PATH + DB_NAME);
+		//return db_file.exists();
     }
     
     /**
@@ -113,7 +114,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (dbExist) {
             Log.v("DB Exists", "db exists");
             // By calling this method here onUpgrade will be called on a
-            // writeable database, but only if the version number has been
+            // writable database, but only if the version number has been
             // bumped
             this.getWritableDatabase();
         } 

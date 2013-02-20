@@ -35,7 +35,6 @@ public class ScheduleAdapter extends SimpleCursorAdapter {
 			v = mInflater.inflate(R.id.schedule_row, null);
 		v.setClickable(false);
 				
-		// TODO Auto-generated method stub
 		TextView time_view = (TextView)v.findViewById(R.id.depart_time);
 		// Truncate the time into a readable format
 		String time = cursor.getString(cursor.getColumnIndex(StopTimesColumns.DEPART));

@@ -1,40 +1,30 @@
 package com.doLast.doGRT.main;
 
-import java.lang.reflect.Method;
-
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.drawable.NinePatchDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockDialogFragment;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.doLast.doGRT.R;
-import com.doLast.doGRT.R.id;
-import com.doLast.doGRT.R.layout;
-import com.doLast.doGRT.R.menu;
 import com.doLast.doGRT.custom.MyDialogFragment;
 import com.doLast.doGRT.database.DatabaseSchema.UserBusStopsColumns;
 import com.doLast.doGRT.map.GMapsActivity;
@@ -98,8 +88,8 @@ public class MainActivity extends SherlockFragmentActivity {
         setContentView(R.layout.activity_main);
         
         list_view = (ListView)findViewById(R.id.main_list_view);
-        list_view.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        list_view.setEmptyView((TextView)findViewById(android.R.id.empty));                     
+        list_view.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+        list_view.setEmptyView(findViewById(android.R.id.empty));                     
         
         // Setup list view
         setupListView();
@@ -137,7 +127,7 @@ public class MainActivity extends SherlockFragmentActivity {
         	startActivity(gmap_intent);
             return true;
         case R.id.about_option:
-            Toast.makeText(this, version, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.app_version, Toast.LENGTH_SHORT).show();
             return true;
         }
  

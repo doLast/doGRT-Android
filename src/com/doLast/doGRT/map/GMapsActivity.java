@@ -1,7 +1,9 @@
 package com.doLast.doGRT.map;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -10,6 +12,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.location.Criteria;
 import android.location.Location;
@@ -31,11 +37,6 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.doLast.doGRT.R;
-import com.doLast.doGRT.R.drawable;
-import com.doLast.doGRT.R.id;
-import com.doLast.doGRT.R.layout;
-import com.doLast.doGRT.R.menu;
-import com.doLast.doGRT.R.string;
 import com.doLast.doGRT.database.DatabaseSchema;
 import com.doLast.doGRT.database.DatabaseSchema.StopsColumns;
 import com.doLast.doGRT.main.MainActivity;
@@ -46,6 +47,7 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.MyLocationOverlay;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
+import com.google.android.maps.Projection;
 import com.readystatesoftware.mapviewballoons.BalloonItemizedOverlay;
 
 public class GMapsActivity extends SherlockMapActivity implements LocationListener {
@@ -60,6 +62,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	// For hiding balloons
 	private boolean moved = false;
 	
+	// Balloon item overlay
 	public class PinItemizedOverlay extends BalloonItemizedOverlay {
 	   	Context mContext = null;
 	   	String stop_id = null;
@@ -148,6 +151,42 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 		}
 	}
 	
+	// Route line item overlay
+	public class RouteOverlay extends Overlay {
+		// Points of the route
+		private List<GeoPoint> points = null;
+		
+		// Constructor
+		RouteOverlay(List<GeoPoint> p) {
+			points = p;
+		}
+		
+		@Override
+		public void draw(Canvas canvas, MapView map_view, boolean shadow) {
+			super.draw(canvas, map_view, shadow);
+			
+			// Projection - translate coordinates
+			Projection projection = mapView.getProjection();
+			// Colour of the route
+			Paint paint = new Paint();
+			paint.setColor(Color.BLUE);
+			paint.setStyle(Paint.Style.FILL_AND_STROKE);
+			paint.setStrokeJoin(Paint.Join.ROUND);
+			paint.setStrokeCap(Paint.Cap.ROUND);
+			paint.setStrokeWidth(3);
+			
+			Point p1 = new Point();
+			Point p2 = null;
+			// Draw the route
+			for(Iterator<GeoPoint> it = points.iterator(); it.hasNext();) {
+				GeoPoint geo_point = it.next();
+				projection.toPixels(geo_point, p1);
+				if (p2 != null) canvas.drawLine(p1.x, p1.y, p2.x, p2.y, paint);
+				p2 = p1;
+			}			
+		}		
+	}
+	
 	// Number of stops to be displayed
     private final int MAX_STOPS_IN_MAP = 50;
     // Dialog IDs
@@ -156,6 +195,10 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
 	// For locating stop
 	public static final String LOCATE = "locate";
 	private String stop_id = null;
+	// For display route
+	public static final String GMAP_ROUTE_ID = "route_id";
+	private String route_id = null;
+	private boolean display_route = false;
 	
 	
     private MapView mapView;
@@ -202,7 +245,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         // Use the "navigate up" button
         ActionBar action_bar = getSupportActionBar();
         action_bar.setDisplayHomeAsUpEnabled(true);
-                
+        
         // Get the current location
         location_manager = (LocationManager) getSystemService(LOCATION_SERVICE);
         Criteria criteria = new Criteria();
@@ -262,21 +305,27 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         GeoPoint center = null;
                 
         if (extras != null) {
-        	// Move to the location of given stop id
-        	stop_id = extras.getString(LOCATE);
-            String[] projection = { StopsColumns.STOP_LAT, StopsColumns.STOP_LON };
-            String selection = StopsColumns.STOP_ID + " = " + stop_id;
-            Cursor stop = managedQuery(StopsColumns.CONTENT_URI, projection, selection, null, null);
-            stop.moveToFirst();
-            center = new GeoPoint((int)(stop.getDouble(0) * 1e6), (int)(stop.getDouble(1) * 1e6));
-            map_controller.setCenter(center);
+        	// Try retrieve route id
+        	route_id = extras.getString(GMAP_ROUTE_ID);
+        	if (route_id != null) {
+        		drawRoute(route_id);
+        	} else {
+	        	// Move to the location of given stop id
+	        	stop_id = extras.getString(LOCATE);
+	            String[] projection = { StopsColumns.STOP_LAT, StopsColumns.STOP_LON };
+	            String selection = StopsColumns.STOP_ID + " = " + stop_id;
+	            Cursor stop = managedQuery(StopsColumns.CONTENT_URI, projection, selection, null, null);
+	            stop.moveToFirst();
+	            center = new GeoPoint((int)(stop.getDouble(0) * 1e6), (int)(stop.getDouble(1) * 1e6));
+	            map_controller.setCenter(center);
+        	}
         } else {          	
         	center = mapView.getMapCenter();
         }
                 
         // Drop pins
-        dropPins(center, true);     
-        if (extras != null) {
+        if (route_id == null) dropPins(center, true);     
+        if (extras != null && route_id == null) {
         	map_controller.setZoom(21); // Zoom in first to get accurate stop position
         	itemized_overlay.onTap(center, mapView); // Tap the center stop if trying to locate
         	map_controller.setZoom(zoom_level); // Zoom back
@@ -437,6 +486,31 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         	mapOverlays.add(cur_overlay);
         }
         //stops.close();
+    }
+    
+    // Method to draw the route on the map
+    private void drawRoute(String route_id) {    	
+    	// Find the shape sequence
+        String[] projection = { DatabaseSchema.ShapesColumns.SHAPE_SEQ,
+        						DatabaseSchema.ShapesColumns.SHAPE_LAT, DatabaseSchema.ShapesColumns.SHAPE_LON };
+        String selection = new String(
+        		DatabaseSchema.TripsColumns.ROUTE_ID + " = " + route_id + " and " +
+        		DatabaseSchema.TripsColumns.TABLE_NAME + "." + DatabaseSchema.TripsColumns.SHAPE_ID + " = " + 
+        		DatabaseSchema.ShapesColumns.TABLE_NAME + "." + DatabaseSchema.ShapesColumns.SHAPE_ID );
+        
+        Cursor stops = managedQuery(
+        		DatabaseSchema.TS_CONTENT_URI, projection, selection, null, null);
+        List<GeoPoint> points = null;
+        if (stops.getCount() > 1) {
+        	stops.moveToFirst();
+        	points = new ArrayList<GeoPoint>();
+	        for(int i = 0; i < stops.getCount(); ++i) {
+	        	int pos = stops.getInt(0);
+	        	GeoPoint p = new GeoPoint((int)(stops.getDouble(1) * 1E6), (int)(stops.getDouble(2) * 1E6));
+	        	points.add(p);
+	        }
+	        mapOverlays.add(new RouteOverlay(points));
+        }
     }
     
     /**
