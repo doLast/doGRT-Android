@@ -127,6 +127,7 @@ public class ScheduleListFragment extends SherlockListFragment {
     		route_id = ((String)(text_view.getText())).split(" ")[0];
         	Intent map_intent = new Intent(mActivity, GMapsActivity.class);
         	map_intent.putExtra(GMapsActivity.GMAP_ROUTE_ID, route_id);
+        	map_intent.putExtra(GMapsActivity.LOCATE, stop_id);
         	startActivity(map_intent);
     	}
     	

@@ -23,6 +23,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -228,6 +229,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
     
     // Perference setting
     public static final String PREFS_NAME = "map_preference";
+	private static final String mTag = "GMapsActivity";
     private SharedPreferences settings = null;
     
     // Cursors
@@ -309,23 +311,23 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         	route_id = extras.getString(GMAP_ROUTE_ID);
         	if (route_id != null) {
         		drawRoute(route_id);
-        	} else {
-	        	// Move to the location of given stop id
-	        	stop_id = extras.getString(LOCATE);
-	            String[] projection = { StopsColumns.STOP_LAT, StopsColumns.STOP_LON };
-	            String selection = StopsColumns.STOP_ID + " = " + stop_id;
-	            Cursor stop = managedQuery(StopsColumns.CONTENT_URI, projection, selection, null, null);
-	            stop.moveToFirst();
-	            center = new GeoPoint((int)(stop.getDouble(0) * 1e6), (int)(stop.getDouble(1) * 1e6));
-	            map_controller.setCenter(center);
+        		display_route = true;
         	}
+        	// Move to the location of given stop id
+        	stop_id = extras.getString(LOCATE);
+        	String[] projection = { StopsColumns.STOP_LAT, StopsColumns.STOP_LON };
+        	String selection = StopsColumns.STOP_ID + " = " + stop_id;
+        	Cursor stop = managedQuery(StopsColumns.CONTENT_URI, projection, selection, null, null);
+        	stop.moveToFirst();
+        	center = new GeoPoint((int)(stop.getDouble(0) * 1e6), (int)(stop.getDouble(1) * 1e6));
+        	map_controller.setCenter(center);
         } else {          	
         	center = mapView.getMapCenter();
         }
                 
         // Drop pins
         if (route_id == null) dropPins(center, true);     
-        if (extras != null && route_id == null) {
+        if (extras != null && !display_route) {
         	map_controller.setZoom(21); // Zoom in first to get accurate stop position
         	itemized_overlay.onTap(center, mapView); // Tap the center stop if trying to locate
         	map_controller.setZoom(zoom_level); // Zoom back
@@ -502,6 +504,7 @@ public class GMapsActivity extends SherlockMapActivity implements LocationListen
         		DatabaseSchema.TS_CONTENT_URI, projection, selection, null, null);
         List<GeoPoint> points = null;
         if (stops.getCount() > 1) {
+        	Log.v(mTag, stops.getCount() + "");
         	stops.moveToFirst();
         	points = new ArrayList<GeoPoint>();
 	        for(int i = 0; i < stops.getCount(); ++i) {
